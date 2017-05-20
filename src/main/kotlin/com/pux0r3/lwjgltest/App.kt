@@ -3,6 +3,12 @@
  */
 package com.pux0r3.lwjgltest
 
+import kotlin.concurrent.thread
+
 fun main (args: Array<String>) {
     println("hello world")
+    val game = Game()
+    thread {
+        game.run()
+    }
 }
