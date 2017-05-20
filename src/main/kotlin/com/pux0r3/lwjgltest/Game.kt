@@ -15,7 +15,7 @@ import java.nio.IntBuffer
 /**
  * Created by pux19 on 5/20/2017.
  */
-class Game {
+class Game(val width: Int, val height: Int) {
     companion object : KLogging()
 
     private var window: Long = NULL
@@ -45,14 +45,14 @@ class Game {
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE)
 
-        window = glfwCreateWindow(300, 300, "Hello World", NULL, NULL)
+        window = glfwCreateWindow(width, height, "Hello World", NULL, NULL)
         if (window == NULL) {
             logger.error { "Unable to create GLFW window" }
         }
 
         glfwSetKeyCallback(window, { window, key, scancode, action, mods ->
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-                glfwWindowShouldClose(window)
+                glfwSetWindowShouldClose(window, true)
             }
         })
 
