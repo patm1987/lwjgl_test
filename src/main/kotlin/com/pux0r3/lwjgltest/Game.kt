@@ -19,6 +19,7 @@ class Game(val width: Int, val height: Int) {
     companion object : KLogging()
 
     private var window: Long = NULL
+    private var shader: ShaderProgram? = null
 
     fun run() {
         logger.info { "Starting Game with ${Version.getVersion()}!" }
@@ -81,7 +82,10 @@ class Game(val width: Int, val height: Int) {
     }
 
     fun loop() {
+        // GL can do stuff after this line
         GL.createCapabilities()
+
+        createShaders()
 
         glClearColor(1.0f, 0.0f, 0.0f, 0.0f)
 
@@ -90,5 +94,36 @@ class Game(val width: Int, val height: Int) {
             glfwSwapBuffers(window)
             glfwPollEvents()
         }
+
+        // cleanup
+        freeShaders()
+    }
+
+    private fun createShaders() {
+        shader = ShaderProgram(
+                """
+#version 330
+
+layout (location=0) in vec3 position;
+
+void main() {
+    gl_Position = vec4(position, 1.0);
+}
+""",
+                """
+#version 330
+
+out vec4 fragColor;
+
+void main() {
+    fragColor = vec4(0.0, 0.5, 0.5, 1.0);
+}
+"""
+        )
+    }
+
+    private fun freeShaders() {
+        shader?.free()
+        shader = null
     }
 }
