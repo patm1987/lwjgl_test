@@ -1,6 +1,5 @@
 package com.pux0r3.lwjgltest
 
-import com.sun.prism.ps.Shader
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.system.MemoryStack.stackPush
 
