@@ -18,14 +18,16 @@ class ShaderProgram(vertexSource: String, fragmentSource: String) {
     }
 
     fun free() {
-        unbind()
         glDeleteProgram(programId)
         glDeleteShader(vertexShader)
         glDeleteShader(fragmentShader)
     }
 
-    fun bind() {}
-    fun unbind() {}
+    inline fun use(callback: ()->Unit) {
+        glUseProgram(programId)
+        callback()
+        glUseProgram(0)
+    }
 
     private fun createProgram(): Int {
         val program = glCreateProgram()

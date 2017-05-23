@@ -20,6 +20,7 @@ class Game(val width: Int, val height: Int) {
 
     private var window: Long = NULL
     private var shader: ShaderProgram? = null
+    private var model: SimpleModel? = null
 
     fun run() {
         logger.info { "Starting Game with ${Version.getVersion()}!" }
@@ -86,6 +87,7 @@ class Game(val width: Int, val height: Int) {
         GL.createCapabilities()
 
         createShaders()
+        createModels()
 
         glClearColor(1.0f, 0.0f, 0.0f, 0.0f)
 
@@ -96,6 +98,7 @@ class Game(val width: Int, val height: Int) {
         }
 
         // cleanup
+        freeModels()
         freeShaders()
     }
 
@@ -125,5 +128,17 @@ void main() {
     private fun freeShaders() {
         shader?.free()
         shader = null
+    }
+
+    private fun createModels() {
+        model = SimpleModel(
+                arrayOf(Vertex(-1f, -1f, 0f), Vertex(0f, 1f, 0f), Vertex(1f, -1f, 0f)),
+                arrayOf(0, 1, 2),
+                shader!!)
+    }
+
+    private fun freeModels() {
+        model?.free()
+        model = null
     }
 }
