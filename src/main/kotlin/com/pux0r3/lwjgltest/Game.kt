@@ -89,10 +89,19 @@ class Game(val width: Int, val height: Int) {
         createShaders()
         createModels()
 
-        glClearColor(1.0f, 0.0f, 0.0f, 0.0f)
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
 
         while (!glfwWindowShouldClose(window)) {
             glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+
+            if (shader != null && model != null) {
+                // TODO: make shader handling smarter. the model has a reference to the shader, but we don't want it to
+                // call use to reduce redundant state sets
+                shader!!.use {
+                    model!!.draw()
+                }
+            }
+
             glfwSwapBuffers(window)
             glfwPollEvents()
         }

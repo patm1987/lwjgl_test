@@ -17,6 +17,8 @@ class ShaderProgram(vertexSource: String, fragmentSource: String) {
         link()
     }
 
+    val positionAttribute: Int = getAttributeLocation("position")
+
     fun free() {
         glDeleteProgram(programId)
         glDeleteShader(vertexShader)
@@ -25,7 +27,9 @@ class ShaderProgram(vertexSource: String, fragmentSource: String) {
 
     inline fun use(callback: ()->Unit) {
         glUseProgram(programId)
+        glEnableVertexAttribArray(positionAttribute)
         callback()
+        glDisableVertexAttribArray(positionAttribute)
         glUseProgram(0)
     }
 
@@ -80,5 +84,9 @@ class ShaderProgram(vertexSource: String, fragmentSource: String) {
         if (glGetProgrami(programId, GL_VALIDATE_STATUS) == 0) {
             logger.warn{"Warning whilst validating shader: ${glGetProgramInfoLog(programId)}"}
         }
+    }
+
+    private fun getAttributeLocation(attributeName: String): Int {
+        return glGetAttribLocation(programId, attributeName)
     }
 }
