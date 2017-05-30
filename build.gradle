@@ -18,6 +18,7 @@ switch (OperatingSystem.current()) {
 buildscript {
     ext.kotlin_version = '1.1.2'
     ext.lwjglVersion = '3.1.2'
+    ext.jomlVersion = '1.9.3'
 
     repositories {
         mavenCentral()
@@ -92,6 +93,9 @@ dependencies {
     runtime "org.lwjgl:lwjgl-tinyfd:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-xxhash:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-yoga:${lwjglVersion}:${lwjglNatives}"
+
+    // maths
+    compile "org.joml:joml:${jomlVersion}"
 
     // logging
     compile 'io.github.microutils:kotlin-logging:1.4.4'
