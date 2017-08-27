@@ -10,8 +10,6 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.MemoryUtil.NULL
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.nio.IntBuffer
 
 /**
