@@ -10,6 +10,8 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.MemoryUtil.NULL
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.nio.IntBuffer
 
 /**
@@ -113,26 +115,8 @@ class Game(val width: Int, val height: Int) {
 
     private fun createShaders() {
         shader = ShaderProgram(
-                """
-#version 330
-
-layout (location=0) in vec3 position;
-uniform mat4 ModelViewMatrix;
-
-void main() {
-    gl_Position = ModelViewMatrix * vec4(position, 1.0);
-}
-""",
-                """
-#version 330
-
-out vec4 fragColor;
-
-void main() {
-    fragColor = vec4(0.0, 0.5, 0.5, 1.0);
-}
-"""
-        )
+                Resources.loadAsset("/shaders/basic.vert"),
+                Resources.loadAsset("/shaders/basic.frag"))
     }
 
     private fun freeShaders() {
