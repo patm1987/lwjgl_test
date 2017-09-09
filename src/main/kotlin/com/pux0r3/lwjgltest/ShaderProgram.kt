@@ -8,7 +8,7 @@ import org.lwjgl.system.MemoryStack.stackPush
 /**
  * Created by pux19 on 5/20/2017.
  */
-class ShaderProgram(vertexSource: String, fragmentSource: String) {
+class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: OrthographicCamera) {
     companion object : KLogging()
 
     val programId: Int = createProgram()
@@ -32,17 +32,8 @@ class ShaderProgram(vertexSource: String, fragmentSource: String) {
         glUseProgram(programId)
         glEnableVertexAttribArray(positionAttribute)
 
-        // TODO: this is the wrong place for this! Use a Uniform Buffer Object
-        stackPush().use {
-            // test matrix
-            val matrixBuffer = it.mallocFloat(16)
-
-            // l, r, b, t, n, f
-            Matrix4f().ortho(-1f, 1f, -1f, 1f, -1f, 1f).get(matrixBuffer)
-
-            // load test matrix
-            glUniformMatrix4fv(modelViewUniform, false, matrixBuffer)
-        }
+        // TODO: I'm actually going to want to make the MVP matrix. So I'll want to change this
+        camera.loadUniform(modelViewUniform)
         callback()
         glDisableVertexAttribArray(positionAttribute)
         glUseProgram(0)

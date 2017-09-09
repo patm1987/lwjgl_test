@@ -15,12 +15,18 @@ import java.nio.IntBuffer
 /**
  * Created by pux19 on 5/20/2017.
  */
-class Game(val width: Int, val height: Int) {
+class Game(width: Int, height: Int) {
     companion object : KLogging()
 
     private var window: Long = NULL
     private var shader: ShaderProgram? = null
     private var model: SimpleModel? = null
+    private var camera = OrthographicCamera(1f)
+
+    private var width = width
+    private var height = height
+    private var pendingWidth = 0
+    private var pendingHeight = 0
 
     fun run() {
         logger.info { "Starting Game with ${Version.getVersion()}!" }
@@ -58,6 +64,12 @@ class Game(val width: Int, val height: Int) {
             }
         })
 
+        glfwSetWindowSizeCallback(window, {window, width, height ->
+            camera.setResolution(width, height)
+            pendingWidth = width
+            pendingHeight = height
+        })
+
         stackPush().use {
             val pWidth: IntBuffer = it.mallocInt(1)
             val pHeight: IntBuffer = it.mallocInt(1)
@@ -92,6 +104,11 @@ class Game(val width: Int, val height: Int) {
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
 
         while (!glfwWindowShouldClose(window)) {
+            if (pendingWidth != width || pendingHeight != height) {
+                width = pendingWidth
+                height = pendingHeight
+                glViewport(0, 0, width, height)
+            }
             glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
             if (shader != null && model != null) {
@@ -112,9 +129,11 @@ class Game(val width: Int, val height: Int) {
     }
 
     private fun createShaders() {
+        camera.setResolution(width, height)
         shader = ShaderProgram(
                 Resources.loadAsset("/shaders/basic.vert"),
-                Resources.loadAsset("/shaders/basic.frag"))
+                Resources.loadAsset("/shaders/basic.frag"),
+                camera)
     }
 
     private fun freeShaders() {
