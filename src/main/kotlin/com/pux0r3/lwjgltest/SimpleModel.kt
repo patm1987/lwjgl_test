@@ -4,11 +4,12 @@ import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL20
 import org.lwjgl.system.MemoryStack.stackPush
+import org.lwjgl.system.NativeResource
 
 /**
  * Created by pux19 on 5/22/2017.
  */
-class SimpleModel(val vertices: Array<Vertex>, val indices: Array<Short>, val shader: ShaderProgram) {
+class SimpleModel(val vertices: Array<Vertex>, val indices: Array<Short>, val shader: ShaderProgram): NativeResource {
     private var _vertexBufferObject: Int = 0
     val vertexBufferObject: Int get() = _vertexBufferObject
 
@@ -52,7 +53,7 @@ class SimpleModel(val vertices: Array<Vertex>, val indices: Array<Short>, val sh
         }
     }
 
-    fun free() {
+    override fun free() {
         glDeleteBuffers(vertexBufferObject)
         _vertexBufferObject = 0
 
