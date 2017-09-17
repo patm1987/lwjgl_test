@@ -64,7 +64,7 @@ class Game(width: Int, height: Int) {
             }
         })
 
-        glfwSetWindowSizeCallback(window, {window, width, height ->
+        glfwSetWindowSizeCallback(window, { window, width, height ->
             camera.setResolution(width, height)
             pendingWidth = width
             pendingHeight = height
@@ -131,8 +131,8 @@ class Game(width: Int, height: Int) {
     private fun createShaders() {
         camera.setResolution(width, height)
         shader = ShaderProgram(
-                Resources.loadAsset("/shaders/basic.vert"),
-                Resources.loadAsset("/shaders/basic.frag"),
+                Resources.loadAssetAsString("/shaders/basic.vert"),
+                Resources.loadAssetAsString("/shaders/basic.frag"),
                 camera)
     }
 
@@ -142,10 +142,12 @@ class Game(width: Int, height: Int) {
     }
 
     private fun createModels() {
+        val shader = shader ?: throw RuntimeException("Shader was null!")
+        val ship = ObjImporter.importFile("/models/ship.obj", shader)
         model = SimpleModel(
                 arrayOf(Vertex(-1f, -1f, 0f), Vertex(0f, 1f, 0f), Vertex(1f, -1f, 0f)),
                 arrayOf(0, 1, 2),
-                shader!!)
+                shader)
     }
 
     private fun freeModels() {

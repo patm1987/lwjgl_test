@@ -4,13 +4,16 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 
 object Resources {
-    fun loadAsset(path: String): String {
-        val vertexStream = this.javaClass.getResourceAsStream(path)
-        val vertexReader = BufferedReader(InputStreamReader(vertexStream))
+    fun loadAssetAsString(path: String): String {
         var body: String? = null
-        vertexReader.use {
+        loadAssetAsReader(path).use {
             body = it.readLines().joinToString("\n")
         }
         return body ?: ""
+    }
+
+    fun loadAssetAsReader(path: String): BufferedReader {
+        val inputStream = this.javaClass.getResourceAsStream(path)
+        return BufferedReader(InputStreamReader(inputStream))
     }
 }
