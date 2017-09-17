@@ -17,6 +17,12 @@ class SimpleModel(val vertices: Array<Vertex>, val indices: Array<Short>, val sh
     val indexBufferObject: Int get() = _indexBufferObject
 
     init {
+        indices.forEach {
+            if (it < 0 || it >= vertices.size) {
+                throw RuntimeException("Index $it is out of range")
+            }
+        }
+
         stackPush().use {
             val floatBuffer = it.mallocFloat(vertices.size * 3)
             vertices.forEach { it.put(floatBuffer) }
@@ -39,16 +45,14 @@ class SimpleModel(val vertices: Array<Vertex>, val indices: Array<Short>, val sh
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject)
         callback()
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
     }
 
     fun draw() {
         // TODO: we have no guarantee that the user set "use" on the correct shader. Fix this!
         use {
-            val stride = Vertex.ELEMENT_COUNT * Vertex.ELEMENT_SIZE
-            val offset: Long = 0
-            GL20.glVertexAttribPointer(shader.positionAttribute, vertices.size, GL_FLOAT, false, stride, offset)
+            GL20.glVertexAttribPointer(shader.positionAttribute, Vertex.ELEMENT_COUNT, GL_FLOAT, false, 0, 0)
             glDrawElements(GL_TRIANGLES, indices.size, GL_UNSIGNED_SHORT, 0)
         }
     }

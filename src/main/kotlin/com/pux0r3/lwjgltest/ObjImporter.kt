@@ -31,10 +31,10 @@ object ObjImporter {
         companion object {
             fun parse(data: String): ObjFace {
                 val faceParts = data.split('/')
-                val vertex = faceParts[0].toShort()
-                val texture = if (faceParts.size > 1) faceParts[1].toShortOrNull() else null
-                val normal = if (faceParts.size > 2) faceParts[2].toShortOrNull() else null
-                return ObjFace(vertex, texture, normal)
+                val vertex = faceParts[0].toShort() - 1
+                val texture = (if (faceParts.size > 1) faceParts[1].toShortOrNull() else null)?.let { it - 1 }
+                val normal = (if (faceParts.size > 2) faceParts[2].toShortOrNull() else null)?.let { it - 1 }
+                return ObjFace(vertex.toShort(), texture?.toShort(), normal?.toShort())
             }
         }
     }

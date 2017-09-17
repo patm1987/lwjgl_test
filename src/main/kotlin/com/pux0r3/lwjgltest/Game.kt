@@ -15,16 +15,14 @@ import java.nio.IntBuffer
 /**
  * Created by pux19 on 5/20/2017.
  */
-class Game(width: Int, height: Int) {
+class Game(private var width: Int, private var height: Int) {
     companion object : KLogging()
 
     private var window: Long = NULL
     private var shader: ShaderProgram? = null
-    private var model: SimpleModel? = null
+    private var models = mutableListOf<SimpleModel>()
     private var camera = OrthographicCamera(1f)
 
-    private var width = width
-    private var height = height
     private var pendingWidth = 0
     private var pendingHeight = 0
 
@@ -111,12 +109,10 @@ class Game(width: Int, height: Int) {
             }
             glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
-            if (shader != null && model != null) {
+            shader?.use {
                 // TODO: make shader handling smarter. the model has a reference to the shader, but we don't want it to
                 // call use to reduce redundant state sets
-                shader!!.use {
-                    model!!.draw()
-                }
+                models.forEach { it.draw() }
             }
 
             glfwSwapBuffers(window)
@@ -144,14 +140,14 @@ class Game(width: Int, height: Int) {
     private fun createModels() {
         val shader = shader ?: throw RuntimeException("Shader was null!")
         val ship = ObjImporter.importFile("/models/ship.obj", shader)
-        model = SimpleModel(
+        models.add(ship)
+        models.add(SimpleModel(
                 arrayOf(Vertex(-1f, -1f, 0f), Vertex(0f, 1f, 0f), Vertex(1f, -1f, 0f)),
                 arrayOf(0, 1, 2),
-                shader)
+                shader))
     }
 
     private fun freeModels() {
-        model?.free()
-        model = null
+        models.forEach { it.free() }
     }
 }
