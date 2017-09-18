@@ -1,6 +1,7 @@
 package com.pux0r3.lwjgltest
 
 import mu.KLogging
+import org.joml.Vector3f
 import org.lwjgl.Version
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
@@ -21,7 +22,7 @@ class Game(private var width: Int, private var height: Int) {
     private var window: Long = NULL
     private var shader: ShaderProgram? = null
     private var models = mutableListOf<SimpleModel>()
-    private var camera = OrthographicCamera(1f)
+    private var camera = OrthographicCamera(1f, position = Vector3f(0f, .5f, 0f))
 
     private var pendingWidth = 0
     private var pendingHeight = 0
