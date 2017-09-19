@@ -125,7 +125,7 @@ class Game(private var width: Int, private var height: Int) {
             cameraPositionRadians %= 2f * Math.PI.toFloat()
             cameraPosition.x = Math.cos(cameraPositionRadians.toDouble()).toFloat() * cameraDistance
             cameraPosition.z = Math.sin(cameraPositionRadians.toDouble()).toFloat() * cameraDistance
-            camera._position = cameraPosition
+            camera.setPosition(cameraPosition)
 
             // render
             if (pendingWidth != width || pendingHeight != height) {

@@ -37,16 +37,8 @@ class LookAtPerspectiveCamera(
     private var perspectiveMatrix = Matrix4f()
     private var viewMatrix = Matrix4f()
     private var viewDirty = true
-    var _position: Vector3f = position
-        set(value) {
-            viewDirty = true
-            field = value
-        }
-    var _target: Vector3f = target
-        set(value) {
-            viewDirty = true
-            field = value
-        }
+    private var _position: Vector3f = position
+    private var _target: Vector3f = target
     private val upVector = Vector3f(0f, 1f, 0f)
 
     private var viewProjectionMatrix = Matrix4f()
@@ -90,4 +82,39 @@ class LookAtPerspectiveCamera(
         viewProjectionMatrix.set(perspectiveMatrix).mul(viewMatrix)
     }
 
+    /**
+     * Sets the position of this camera to the given position
+     * note that this value is copied in
+     * @param position our new position
+     */
+    fun setPosition(position: Vector3f) {
+        _position.set(position)
+        viewDirty = true
+    }
+
+    /**
+     * Retrieves the position of this camera
+     * @param outPosition vector that will hold this camera's position
+     */
+    fun getPosition(outPosition: Vector3f) {
+        outPosition.set(_position)
+    }
+
+    /**
+     * Sets the target of this camera
+     * note that this value will be copied in
+     * @param target the new target of the camera
+     */
+    fun setTarget(target: Vector3f) {
+        _target = target
+        viewDirty = true
+    }
+
+    /**
+     * retrieves the target of this camera
+     * @param outTarget the value that will hold this camera's target
+     */
+    fun getTarget(outTarget: Vector3f) {
+        outTarget.set(_target)
+    }
 }
