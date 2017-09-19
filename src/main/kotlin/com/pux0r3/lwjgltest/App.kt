@@ -7,7 +7,7 @@ import kotlin.concurrent.thread
 
 fun main (args: Array<String>) {
     println("hello world")
-    val game = Game(640, 480)
+    val game = Game(1600, 900)
     thread {
         game.run()
     }

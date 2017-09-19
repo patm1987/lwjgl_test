@@ -7,7 +7,7 @@ import org.lwjgl.system.NativeResource
 /**
  * Created by pux19 on 5/20/2017.
  */
-class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: OrthographicCamera) : NativeResource {
+class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: ICamera) : NativeResource {
     companion object : KLogging()
 
     val programId: Int = createProgram()

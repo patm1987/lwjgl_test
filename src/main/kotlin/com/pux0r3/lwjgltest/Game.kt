@@ -22,7 +22,13 @@ class Game(private var width: Int, private var height: Int) {
     private var window: Long = NULL
     private var shader: ShaderProgram? = null
     private var models = mutableListOf<SimpleModel>()
-    private var camera = OrthographicCamera(1f, position = Vector3f(0f, .5f, 0f))
+    private val camera = LookAtPerspectiveCamera(
+            Math.toRadians(45.0).toFloat(),
+            1f,
+            .01f,
+            100f,
+            Vector3f(0f, .5f, 10f),
+            Vector3f())
 
     private var pendingWidth = 0
     private var pendingHeight = 0

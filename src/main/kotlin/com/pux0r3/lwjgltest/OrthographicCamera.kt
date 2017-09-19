@@ -10,10 +10,10 @@ class OrthographicCamera(
         private val orthoHeight: Float,
         private val near: Float = -1f,
         private val far: Float = 1f,
-        var position: Vector3f = Vector3f()) : NativeResource {
+        var position: Vector3f = Vector3f()): ICamera {
     private var projectionMatrix = Matrix4f()
 
-    fun setResolution(width: Int, height: Int) {
+    override fun setResolution(width: Int, height: Int) {
         val orthoWidth = width * orthoHeight / height
         projectionMatrix = Matrix4f().ortho(
                 -orthoWidth,
@@ -24,20 +24,16 @@ class OrthographicCamera(
                 far)
     }
 
-    fun loadUniform(uniformId: Int) {
+    override fun loadUniform(uniformId: Int) {
         // TODO: only recalculate when changed
         val inversePosition = Vector3f(position)
         inversePosition.negate()
-        val viewProjection = Matrix4f().set(projectionMatrix).mul(Matrix4f().translate(inversePosition))
+        val viewProjection = Matrix4f().set(projectionMatrix).translate(inversePosition)
         stackPush().use {
             val nativeMatrix = it.mallocFloat(16)
             viewProjection.get(nativeMatrix)
 
             GL20.glUniformMatrix4fv(uniformId, false, nativeMatrix)
         }
-    }
-
-    override fun free() {
-        // TODO: fix
     }
 }
