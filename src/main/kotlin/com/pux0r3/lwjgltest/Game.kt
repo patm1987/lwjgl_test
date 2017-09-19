@@ -27,7 +27,7 @@ class Game(private var width: Int, private var height: Int) {
             1f,
             .01f,
             100f,
-            Vector3f(0f, .5f, 10f),
+            Vector3f(0f, .5f, -10f),
             Vector3f())
 
     private var pendingWidth = 0

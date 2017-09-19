@@ -47,6 +47,7 @@ class LookAtPerspectiveCamera(
             viewDirty = true
             field = value
         }
+    private val upVector = Vector3f(0f, 1f, 0f)
 
     private var viewProjectionMatrix = Matrix4f()
 
@@ -81,7 +82,7 @@ class LookAtPerspectiveCamera(
     }
 
     private fun updateViewMatrix() {
-        viewMatrix.setTranslation(-_position.x, -_position.y, -_position.z)
+        viewMatrix.setLookAt(_position, _target, upVector)
         viewDirty = false
     }
 
