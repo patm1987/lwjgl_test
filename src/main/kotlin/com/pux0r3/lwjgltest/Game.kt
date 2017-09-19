@@ -9,6 +9,7 @@ import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWVidMode
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
+import org.lwjgl.system.MathUtil
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.MemoryUtil.NULL
 import java.nio.IntBuffer
@@ -108,7 +109,25 @@ class Game(private var width: Int, private var height: Int) {
 
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
 
+        var cameraPositionRadians = 0f
+        val cameraDistance = 10f
+        val cameraHeight = 10f
+
+        var lastTime = glfwGetTime()
+        val cameraPosition = Vector3f(0f, cameraHeight, cameraDistance)
         while (!glfwWindowShouldClose(window)) {
+            // game stuff
+            val currentTime = glfwGetTime()
+            val deltaTime = (currentTime - lastTime).toFloat()
+            lastTime = currentTime
+
+            cameraPositionRadians += deltaTime
+            cameraPositionRadians %= 2f * Math.PI.toFloat()
+            cameraPosition.x = Math.cos(cameraPositionRadians.toDouble()).toFloat() * cameraDistance
+            cameraPosition.z = Math.sin(cameraPositionRadians.toDouble()).toFloat() * cameraDistance
+            camera._position = cameraPosition
+
+            // render
             if (pendingWidth != width || pendingHeight != height) {
                 width = pendingWidth
                 height = pendingHeight
