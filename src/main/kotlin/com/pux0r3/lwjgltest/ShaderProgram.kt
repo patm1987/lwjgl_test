@@ -11,15 +11,22 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
     companion object : KLogging()
 
     val programId: Int = createProgram()
-    val vertexShader: Int = createShader(vertexSource, GL_VERTEX_SHADER)
-    val fragmentShader: Int = createShader(fragmentSource, GL_FRAGMENT_SHADER)
+    private val vertexShader: Int = createShader(vertexSource, GL_VERTEX_SHADER)
+    private val fragmentShader: Int = createShader(fragmentSource, GL_FRAGMENT_SHADER)
+
+    val positionAttribute: Int
+    val normalAttribute: Int
+    val modelViewUniform: Int
 
     init {
         link()
-    }
 
-    val positionAttribute: Int = getAttributeLocation("position")
-    val modelViewUniform: Int = getUniformLocation("ModelViewMatrix")
+        glUseProgram(programId)
+        positionAttribute = getAttributeLocation("position")
+        normalAttribute = getAttributeLocation("normal")
+        modelViewUniform = getUniformLocation("ModelViewMatrix")
+        glUseProgram(0)
+    }
 
     override fun free() {
         glDeleteProgram(programId)
@@ -30,11 +37,13 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
     inline fun use(callback: () -> Unit) {
         glUseProgram(programId)
         glEnableVertexAttribArray(positionAttribute)
+        glEnableVertexAttribArray(normalAttribute)
 
         // TODO: I'm actually going to want to make the MVP matrix. So I'll want to change this
         camera.loadUniform(modelViewUniform)
         callback()
         glDisableVertexAttribArray(positionAttribute)
+        glDisableVertexAttribArray(normalAttribute)
         glUseProgram(0)
     }
 

@@ -5,6 +5,7 @@ import org.joml.Vector3f
 object ObjImporter {
     fun importFile(filename: String, shaderProgram: ShaderProgram): SimpleModel {
         val vertices = mutableListOf<Vector3f>()
+        val normals = mutableListOf<Vector3f>()
         val indices = mutableListOf<Short>()
 
         Resources.loadAssetAsReader(filename).use { objFile ->
@@ -15,7 +16,9 @@ object ObjImporter {
                         vertices.add(Vector3f(tokens[1].toFloat(), tokens[2].toFloat(), tokens[3].toFloat()))
                     }
                     "vt" -> println("Found texture coordinate: $line")
-                    "vn" -> println("Found list of vertex normals: $line")
+                    "vn" -> {
+                        normals.add(Vector3f(tokens[1].toFloat(), tokens[2].toFloat(), tokens[3].toFloat()))
+                    }
                     "vp" -> println("Found a parameter space vertex: $line")
                     "f" -> {
                         val faceIndices = listOf(ObjFace.parse(tokens[1]), ObjFace.parse(tokens[2]), ObjFace.parse(tokens[3]))
@@ -26,7 +29,7 @@ object ObjImporter {
             }
         }
 
-        return SimpleModel(vertices.toTypedArray(), indices.toTypedArray(), shaderProgram)
+        return SimpleModel(vertices.toTypedArray(), normals.toTypedArray(), indices.toTypedArray(), shaderProgram)
     }
 
     data class ObjFace(val vertexIndex: Short, val textureIndex: Short?, val normalIndex: Short?) {
