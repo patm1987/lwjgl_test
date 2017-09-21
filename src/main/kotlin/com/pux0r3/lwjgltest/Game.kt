@@ -167,10 +167,6 @@ class Game(private var width: Int, private var height: Int) {
         val shader = shader ?: throw RuntimeException("Shader was null!")
         val ship = ObjImporter.importFile("/models/ship.obj", shader)
         models.add(ship)
-        models.add(SimpleModel(
-                arrayOf(Vertex(-1f, -1f, 0f), Vertex(0f, 1f, 0f), Vertex(1f, -1f, 0f)),
-                arrayOf(0, 1, 2),
-                shader))
     }
 
     private fun freeModels() {

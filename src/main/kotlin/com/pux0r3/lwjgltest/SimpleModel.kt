@@ -1,5 +1,6 @@
 package com.pux0r3.lwjgltest
 
+import org.joml.Vector3f
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL20
@@ -9,7 +10,10 @@ import org.lwjgl.system.NativeResource
 /**
  * Created by pux19 on 5/22/2017.
  */
-class SimpleModel(val vertices: Array<Vertex>, val indices: Array<Short>, val shader: ShaderProgram): NativeResource {
+class SimpleModel(
+        private val vertices: Array<Vector3f>,
+        private val indices: Array<Short>,
+        private val shader: ShaderProgram) : NativeResource {
     private var _vertexBufferObject: Int = 0
     val vertexBufferObject: Int get() = _vertexBufferObject
 
@@ -25,7 +29,10 @@ class SimpleModel(val vertices: Array<Vertex>, val indices: Array<Short>, val sh
 
         stackPush().use {
             val floatBuffer = it.mallocFloat(vertices.size * 3)
-            vertices.forEach { it.put(floatBuffer) }
+            vertices.forEach {
+                it.get(floatBuffer)
+                floatBuffer.position(floatBuffer.position() + 3)
+            }
             floatBuffer.flip()
             _vertexBufferObject = glGenBuffers()
 
@@ -52,7 +59,8 @@ class SimpleModel(val vertices: Array<Vertex>, val indices: Array<Short>, val sh
     fun draw() {
         // TODO: we have no guarantee that the user set "use" on the correct shader. Fix this!
         use {
-            GL20.glVertexAttribPointer(shader.positionAttribute, Vertex.ELEMENT_COUNT, GL_FLOAT, false, 0, 0)
+            // size = 3, vector 3 f
+            GL20.glVertexAttribPointer(shader.positionAttribute, 3, GL_FLOAT, false, 0, 0)
             glDrawElements(GL_TRIANGLES, indices.size, GL_UNSIGNED_SHORT, 0)
         }
     }

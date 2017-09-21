@@ -1,8 +1,10 @@
 package com.pux0r3.lwjgltest
 
+import org.joml.Vector3f
+
 object ObjImporter {
     fun importFile(filename: String, shaderProgram: ShaderProgram): SimpleModel {
-        val vertices = mutableListOf<Vertex>()
+        val vertices = mutableListOf<Vector3f>()
         val indices = mutableListOf<Short>()
 
         Resources.loadAssetAsReader(filename).use { objFile ->
@@ -10,7 +12,7 @@ object ObjImporter {
                 val tokens = line.split(' ')
                 when (tokens[0]) {
                     "v" -> {
-                        vertices.add(Vertex(tokens[1].toFloat(), tokens[2].toFloat(), tokens[3].toFloat()))
+                        vertices.add(Vector3f(tokens[1].toFloat(), tokens[2].toFloat(), tokens[3].toFloat()))
                     }
                     "vt" -> println("Found texture coordinate: $line")
                     "vn" -> println("Found list of vertex normals: $line")
