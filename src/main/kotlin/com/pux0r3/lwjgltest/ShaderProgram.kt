@@ -1,7 +1,10 @@
 package com.pux0r3.lwjgltest
 
 import mu.KLogging
+import org.joml.Vector3f
+import org.joml.Vector4f
 import org.lwjgl.opengl.GL20.*
+import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.NativeResource
 
 /**
@@ -10,6 +13,7 @@ import org.lwjgl.system.NativeResource
 class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: ICamera) : NativeResource {
     companion object : KLogging()
 
+    // TODO: I want to maintain all of these states internally rather than setting them externally
     val programId: Int = createProgram()
     private val vertexShader: Int = createShader(vertexSource, GL_VERTEX_SHADER)
     private val fragmentShader: Int = createShader(fragmentSource, GL_FRAGMENT_SHADER)
@@ -18,6 +22,14 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
     val normalAttribute: Int
     val modelViewUniform: Int
 
+    val worldAmbientColorUniform: Int
+    val worldLightDirectionUniform: Int
+    val worldLightColorUniform: Int
+
+    var lightDirection: Vector3f = Vector3f(.5f, .5f, .5f).normalize()
+    var ambientColor: Vector4f = Vector4f(.5f, .5f, .5f, 1f)
+    var lightColor: Vector4f = Vector4f(.5f, .5f, .5f, 1f)
+
     init {
         link()
 
@@ -25,6 +37,10 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
         positionAttribute = getAttributeLocation("position")
         normalAttribute = getAttributeLocation("normal")
         modelViewUniform = getUniformLocation("ModelViewMatrix")
+
+        worldAmbientColorUniform = getUniformLocation("worldAmbient")
+        worldLightDirectionUniform = getUniformLocation("worldLightDirection")
+        worldLightColorUniform = getUniformLocation("worldLightColor")
         glUseProgram(0)
     }
 
@@ -41,6 +57,20 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
 
         // TODO: I'm actually going to want to make the MVP matrix. So I'll want to change this
         camera.loadUniform(modelViewUniform)
+        MemoryStack.stackPush().use {
+            val lightDirectionBuffer = it.mallocFloat(3)
+            lightDirection.get(lightDirectionBuffer)
+            glUniform3fv(worldLightDirectionUniform, lightDirectionBuffer)
+
+            val ambientColorBuffer = it.mallocFloat(4)
+            ambientColor.get(ambientColorBuffer)
+            glUniform4fv(worldAmbientColorUniform, ambientColorBuffer)
+
+            val lightColorBuffer = it.mallocFloat(4)
+            lightColor.get(lightColorBuffer)
+            glUniform4fv(worldLightColorUniform, lightColorBuffer)
+        }
+
         callback()
         glDisableVertexAttribArray(positionAttribute)
         glDisableVertexAttribArray(normalAttribute)

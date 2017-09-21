@@ -1,9 +1,11 @@
 #version 330
 
-in vec3 outNormal;
+in float normalDot;
 out vec4 fragColor;
 
+uniform vec4 worldAmbient;
+uniform vec4 worldLightColor;
+
 void main() {
-    fragColor.rgb = (outNormal + vec3(1.0, 1.0, 1.0)) / 2.0;
-    fragColor.a = 1.0;
+    fragColor = worldAmbient + normalDot * worldLightColor;
 }
