@@ -30,6 +30,12 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
     var ambientColor: Vector4f = Vector4f(.5f, .5f, .5f, 1f)
     var lightColor: Vector4f = Vector4f(.5f, .5f, .5f, 1f)
 
+    /**
+     * When a call to [use] is made, the callback acts on this object. I make it private here so that you may only
+     * attempt to render a model after this shader program has been properly made current
+     */
+    private val activeShader = ActiveShader()
+
     init {
         link()
 
@@ -50,7 +56,7 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
         glDeleteShader(fragmentShader)
     }
 
-    inline fun use(callback: () -> Unit) {
+    fun use(callback: ActiveShader.() -> Unit) {
         glUseProgram(programId)
         glEnableVertexAttribArray(positionAttribute)
         glEnableVertexAttribArray(normalAttribute)
@@ -71,7 +77,7 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
             glUniform4fv(worldLightColorUniform, lightColorBuffer)
         }
 
-        callback()
+        activeShader.callback()
         glDisableVertexAttribArray(positionAttribute)
         glDisableVertexAttribArray(normalAttribute)
         glUseProgram(0)
@@ -139,5 +145,18 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
 
     private fun getUniformLocation(uniformName: String): Int {
         return glGetUniformLocation(programId, uniformName)
+    }
+
+    /**
+     * Class used in conjunction with [use] to allow some caller to render a model using this shader.
+     */
+    inner class ActiveShader {
+        fun renderModel(model: SimpleModel) {
+            model.use {
+                loadPositions(positionAttribute)
+                loadNormals(normalAttribute)
+                drawElements()
+            }
+        }
     }
 }

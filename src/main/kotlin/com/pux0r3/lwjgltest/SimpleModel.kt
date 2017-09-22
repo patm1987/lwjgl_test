@@ -13,12 +13,17 @@ import org.lwjgl.system.NativeResource
 class SimpleModel(
         positions: Array<Vector3f>,
         normals: Array<Vector3f>,
-        val indices: Array<Short>,
-        private val shader: ShaderProgram) : NativeResource {
+        val indices: Array<Short>) : NativeResource {
     val vertexBufferObject: Int = glGenBuffers()
     val indexBufferObject: Int = glGenBuffers()
 
     private var vertexAttributes = positions.zip(normals) { position, normal -> VertexAttribute(position, normal) }
+
+    /**
+     * This object allows a shader (or any caller) to render this model. It is made private so that you MUST invoke [use]
+     * to bind the proper vertex attributes
+     */
+    private val activeModel = ActiveModel()
 
     init {
         assert(indices.all { it >= 0 && it < positions.size })
@@ -46,28 +51,36 @@ class SimpleModel(
         }
     }
 
-    inline fun use(callback: () -> Unit) {
+    fun use(callback: ActiveModel.() -> Unit) {
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject)
-        callback()
+        activeModel.callback()
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
-    }
-
-    fun draw() {
-        // TODO: we have no guarantee that the user set "use" on the correct shader. Fix this!
-        use {
-            // an attribute is 3 position floats and 3 normal floats
-            // a float is 4 bytes
-            GL20.glVertexAttribPointer(shader.positionAttribute, 3, GL_FLOAT, false, 6*4, 0)
-            GL20.glVertexAttribPointer(shader.normalAttribute, 3, GL_FLOAT, true, 6*4, 3*4)
-            glDrawElements(GL_TRIANGLES, indices.size, GL_UNSIGNED_SHORT, 0)
-        }
     }
 
     override fun free() {
         glDeleteBuffers(vertexBufferObject)
         glDeleteBuffers(indexBufferObject)
+    }
+
+    /**
+     * Class to aid in rendering a model. Even though the model has some number of attributes, a shader might not want
+     * to use all of them. When you call [use], you are operating as a function in this class to guarantee that the
+     * buffers have been properly bound
+     */
+    inner class ActiveModel {
+        fun loadPositions(positionAttributeLocation: Int) {
+            GL20.glVertexAttribPointer(positionAttributeLocation, 3, GL_FLOAT, false, 6*4, 0)
+        }
+
+        fun loadNormals(normalAttributeLocation: Int) {
+            GL20.glVertexAttribPointer(normalAttributeLocation, 3, GL_FLOAT, true, 6*4, 3*4)
+        }
+
+        fun drawElements() {
+            glDrawElements(GL_TRIANGLES, indices.size, GL_UNSIGNED_SHORT, 0)
+        }
     }
 
     private data class VertexAttribute(val position: Vector3f, val normal: Vector3f)

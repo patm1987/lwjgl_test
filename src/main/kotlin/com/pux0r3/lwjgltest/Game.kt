@@ -138,7 +138,9 @@ class Game(private var width: Int, private var height: Int) {
             shader?.use {
                 // TODO: make shader handling smarter. the model has a reference to the shader, but we don't want it to
                 // call use to reduce redundant state sets
-                models.forEach { it.draw() }
+                models.forEach {
+                    renderModel(it)
+                }
             }
 
             glfwSwapBuffers(window)
@@ -164,8 +166,7 @@ class Game(private var width: Int, private var height: Int) {
     }
 
     private fun createModels() {
-        val shader = shader ?: throw RuntimeException("Shader was null!")
-        val ship = ObjImporter.importFile("/models/ship.obj", shader)
+        val ship = ObjImporter.importFile("/models/ship.obj")
         models.add(ship)
     }
 

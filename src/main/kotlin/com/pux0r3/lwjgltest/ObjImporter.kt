@@ -3,7 +3,7 @@ package com.pux0r3.lwjgltest
 import org.joml.Vector3f
 
 object ObjImporter {
-    fun importFile(filename: String, shaderProgram: ShaderProgram): SimpleModel {
+    fun importFile(filename: String): SimpleModel {
         val vertices = mutableListOf<Vector3f>()
         val normals = mutableListOf<Vector3f>()
         val indices = mutableListOf<Short>()
@@ -29,7 +29,7 @@ object ObjImporter {
             }
         }
 
-        return SimpleModel(vertices.toTypedArray(), normals.toTypedArray(), indices.toTypedArray(), shaderProgram)
+        return SimpleModel(vertices.toTypedArray(), normals.toTypedArray(), indices.toTypedArray())
     }
 
     data class ObjFace(val vertexIndex: Short, val textureIndex: Short?, val normalIndex: Short?) {
