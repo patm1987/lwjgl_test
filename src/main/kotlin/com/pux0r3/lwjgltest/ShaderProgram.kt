@@ -20,7 +20,7 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
 
     val positionAttribute: Int
     val normalAttribute: Int
-    val modelViewUniform: Int
+    val viewProjectionUniform: Int
 
     val worldAmbientColorUniform: Int
     val worldLightDirectionUniform: Int
@@ -36,11 +36,11 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
         glUseProgram(programId)
         positionAttribute = getAttributeLocation("position")
         normalAttribute = getAttributeLocation("normal")
-        modelViewUniform = getUniformLocation("ModelViewMatrix")
+        viewProjectionUniform = getUniformLocation("ViewProjectionMatrix")
 
-        worldAmbientColorUniform = getUniformLocation("worldAmbient")
-        worldLightDirectionUniform = getUniformLocation("worldLightDirection")
-        worldLightColorUniform = getUniformLocation("worldLightColor")
+        worldAmbientColorUniform = getUniformLocation("WorldAmbient")
+        worldLightDirectionUniform = getUniformLocation("WorldLightDirection")
+        worldLightColorUniform = getUniformLocation("WorldLightColor")
         glUseProgram(0)
     }
 
@@ -56,7 +56,7 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
         glEnableVertexAttribArray(normalAttribute)
 
         // TODO: I'm actually going to want to make the MVP matrix. So I'll want to change this
-        camera.loadUniform(modelViewUniform)
+        camera.loadUniform(viewProjectionUniform)
         MemoryStack.stackPush().use {
             val lightDirectionBuffer = it.mallocFloat(3)
             lightDirection.get(lightDirectionBuffer)
