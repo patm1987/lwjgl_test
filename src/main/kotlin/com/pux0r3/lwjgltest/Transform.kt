@@ -25,6 +25,14 @@ class Transform {
         rotation.set(this.rotation)
     }
 
+    fun setScale(scale: Vector3f) {
+        this.scale.set(scale)
+    }
+
+    fun getScale(scale: Vector3f) {
+        scale.set(this.scale)
+    }
+
     /**
      * Gets the matrix that takes this transform from local to world space
      */

@@ -106,4 +106,45 @@ class TransformTest {
         assertEquals(expected.y, testVector.y, EPSILON)
         assertEquals(expected.z, testVector.z, EPSILON)
     }
+
+    @Test
+    fun setsScale() {
+        val scale = Vector3f(0.1f, 0.1f, 0.1f)
+        val transform = Transform()
+        transform.setScale(scale)
+
+        val testScale = Vector3f()
+        transform.getScale(testScale)
+        assertEquals(scale, testScale)
+    }
+
+    @Test
+    fun scaleChangesWorldMatrix() {
+        val scale = Vector3f(0.1f, 0.1f, 0.1f)
+        val transform = Transform()
+        transform.setScale(scale)
+
+        val worldMatrix = Matrix4f()
+        transform.getWorldMatrix(worldMatrix)
+
+        val testScale = Vector3f(1f, 1f, 1f)
+        worldMatrix.transformPosition(testScale)
+
+        assertEquals(scale, testScale)
+    }
+
+    @Test
+    fun scaleChangesInverseWorldMatrix() {
+        val scale = Vector3f(0.1f, 0.1f, 0.1f)
+        val transform = Transform()
+        transform.setScale(scale)
+
+        val inverseWorldMatrix = Matrix4f()
+        transform.getInverseWorldMatrix(inverseWorldMatrix)
+
+        val testScale = Vector3f(0.1f, 0.1f, 0.1f)
+        inverseWorldMatrix.transformPosition(testScale)
+
+        assertEquals(Vector3f(1f, 1f, 1f), testScale)
+    }
 }
