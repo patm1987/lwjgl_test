@@ -7,6 +7,7 @@ import org.joml.Vector3f
 class Transform {
     private val position = Vector3f()
     private val rotation = Quaternionf()
+    private val scale = Vector3f(1f, 1f, 1f)
 
     fun setPosition(position: Vector3f) {
         this.position.set(position)
@@ -28,7 +29,7 @@ class Transform {
      * Gets the matrix that takes this transform from local to world space
      */
     fun getWorldMatrix(worldTransform: Matrix4f) {
-        worldTransform.setTranslation(position)
+        worldTransform.translationRotateScale(position, rotation, scale)
     }
 
     /**
