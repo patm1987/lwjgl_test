@@ -85,4 +85,25 @@ class TransformTest {
         assertEquals(expected.y, testVector.y, EPSILON)
         assertEquals(expected.z, testVector.z, EPSILON)
     }
+
+    @Test
+    fun rotationChangesInverseWorldMatrix() {
+        val rotation = Quaternionf()
+        rotation.set(AxisAngle4f(1f, Vector3f().set(-1f, 0f, 0f)))
+        val transform = Transform()
+        transform.setRotation(rotation)
+
+        val inverseWorldMatrix = Matrix4f()
+        transform.getInverseWorldMatrix(inverseWorldMatrix)
+
+        val testVector = Vector3f(0f, Math.sin(1.0).toFloat(), Math.cos(1.0).toFloat())
+        inverseWorldMatrix.transformDirection(testVector)
+
+        val expected = Vector3f(0f, 0f, 1f)
+
+        // we can't be too exact
+        assertEquals(expected.x, testVector.x, EPSILON)
+        assertEquals(expected.y, testVector.y, EPSILON)
+        assertEquals(expected.z, testVector.z, EPSILON)
+    }
 }
