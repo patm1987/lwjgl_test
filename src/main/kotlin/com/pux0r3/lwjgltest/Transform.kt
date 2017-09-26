@@ -1,10 +1,12 @@
 package com.pux0r3.lwjgltest
 
 import org.joml.Matrix4f
+import org.joml.Quaternionf
 import org.joml.Vector3f
 
 class Transform {
-    private var position = Vector3f()
+    private val position = Vector3f()
+    private val rotation = Quaternionf()
 
     fun setPosition(position: Vector3f) {
         this.position.set(position)
@@ -12,6 +14,14 @@ class Transform {
 
     fun getPosition(position: Vector3f) {
         position.set(this.position)
+    }
+
+    fun setRotation(rotation: Quaternionf) {
+        this.rotation.set(rotation)
+    }
+
+    fun getRotation(rotation: Quaternionf) {
+        rotation.set(this.rotation)
     }
 
     /**

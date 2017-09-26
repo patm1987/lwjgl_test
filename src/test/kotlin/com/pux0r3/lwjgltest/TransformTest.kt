@@ -1,6 +1,8 @@
 package com.pux0r3.lwjgltest
 
+import org.joml.AxisAngle4f
 import org.joml.Matrix4f
+import org.joml.Quaternionf
 import org.joml.Vector3f
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -45,5 +47,18 @@ class TransformTest {
         worldMatrix.transformPosition(transformedPosition)
 
         assertEquals(Vector3f(), transformedPosition)
+    }
+
+    @Test
+    fun setsRotation() {
+        val rotation = Quaternionf()
+        rotation.set(AxisAngle4f(1f, Vector3f().set(1f, 0f, 0f)))
+        val transform = Transform()
+        transform.setRotation(rotation)
+
+        val testRotation = Quaternionf()
+        transform.getRotation(testRotation)
+
+        assertEquals(rotation, testRotation)
     }
 }
