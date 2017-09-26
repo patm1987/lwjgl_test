@@ -31,4 +31,19 @@ class TransformTest {
 
         assertEquals(position, transformedPosition)
     }
+
+    @Test
+    fun positionChangesInverseWorldMatrix() {
+        val position = Vector3f(4f, 3f, 2f)
+        val transform = Transform()
+        transform.setPosition(position)
+
+        val worldMatrix = Matrix4f()
+        transform.getInverseWorldMatrix(worldMatrix)
+
+        val transformedPosition = Vector3f(4f, 3f, 2f)
+        worldMatrix.transformPosition(transformedPosition)
+
+        assertEquals(Vector3f(), transformedPosition)
+    }
 }

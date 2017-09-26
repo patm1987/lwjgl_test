@@ -20,4 +20,11 @@ class Transform {
     fun getWorldMatrix(worldTransform: Matrix4f) {
         worldTransform.setTranslation(position)
     }
+
+    /**
+     * Gets the matrix that takes this transform from world to local space (ex: for a camera)
+     */
+    fun getInverseWorldMatrix(inverseWorldMatrix: Matrix4f) {
+        inverseWorldMatrix.setTranslation(-position.x, -position.y, -position.z)
+    }
 }
