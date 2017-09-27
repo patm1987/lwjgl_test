@@ -1,6 +1,8 @@
 package com.pux0r3.lwjgltest
 
 import mu.KLogging
+import org.joml.AxisAngle4f
+import org.joml.Quaternionf
 import org.joml.Vector3f
 import org.lwjgl.Version
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
@@ -31,6 +33,9 @@ class Game(private var width: Int, private var height: Int) {
 
     private var pendingWidth = 0
     private var pendingHeight = 0
+
+    // cache the ship model for some hacky fun
+    private var ship: SimpleModel? = null
 
     init {
         camera.transform.setPosition(Vector3f(0f, .5f, -10f))
@@ -116,6 +121,13 @@ class Game(private var width: Int, private var height: Int) {
         val cameraDistance = 10f
         val cameraHeight = 10f
 
+        val shipMinHeight = 0f
+        val shipMaxHeight = 2f
+        val shipMinBob = Math.toRadians(-15.0).toFloat()
+        val shipMaxBob = Math.toRadians(15.0).toFloat()
+        val shipPeriod = 5f
+        var shipT = 0f
+
         var lastTime = glfwGetTime()
         val cameraPosition = Vector3f(0f, cameraHeight, cameraDistance)
         while (!glfwWindowShouldClose(window)) {
@@ -124,11 +136,27 @@ class Game(private var width: Int, private var height: Int) {
             val deltaTime = (currentTime - lastTime).toFloat()
             lastTime = currentTime
 
+            // rotate the camera
             cameraPositionRadians += deltaTime
             cameraPositionRadians %= 2f * Math.PI.toFloat()
             cameraPosition.x = Math.cos(cameraPositionRadians.toDouble()).toFloat() * cameraDistance
             cameraPosition.z = Math.sin(cameraPositionRadians.toDouble()).toFloat() * cameraDistance
             camera.transform.setPosition(cameraPosition)
+
+            // bob the ship
+            shipT += deltaTime
+            shipT %= (shipPeriod * 2f)
+            val shipTNorm = (Math.sin((shipT / shipPeriod).toDouble() * 2.0 * Math.PI).toFloat() + 1f) / 2f
+            val shipPosition = Vector3f()
+            ship?.transform?.getPosition(shipPosition)
+            shipPosition.y = shipMinHeight + shipTNorm * (shipMaxHeight - shipMinHeight)
+            ship?.transform?.setPosition(shipPosition)
+
+            // bob forward/back half as fast as up/down
+            val shipTBobNorm = (Math.sin((shipT / shipPeriod * .5f).toDouble() * 2.0 * Math.PI).toFloat() + 1f) / 2f
+            val shipRotation = Quaternionf(
+                    AxisAngle4f(shipMinBob + shipTBobNorm * (shipMaxBob - shipMinBob), 1f, 0f, 0f))
+            ship?.transform?.setRotation(shipRotation)
 
             // render
             if (pendingWidth != width || pendingHeight != height) {
@@ -169,8 +197,8 @@ class Game(private var width: Int, private var height: Int) {
     }
 
     private fun createModels() {
-        val ship = ObjImporter.importFile("/models/ship.obj")
-        models.add(ship)
+        ship = ObjImporter.importFile("/models/ship.obj")
+        ship?.let { models.add(it) }
     }
 
     private fun freeModels() {
