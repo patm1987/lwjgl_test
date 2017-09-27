@@ -27,11 +27,14 @@ class Game(private var width: Int, private var height: Int) {
             1f,
             .01f,
             100f,
-            Vector3f(0f, .5f, -10f),
             Vector3f())
 
     private var pendingWidth = 0
     private var pendingHeight = 0
+
+    init {
+        camera.transform.setPosition(Vector3f(0f, .5f, -10f))
+    }
 
     fun run() {
         logger.info { "Starting Game with ${Version.getVersion()}!" }
@@ -125,7 +128,7 @@ class Game(private var width: Int, private var height: Int) {
             cameraPositionRadians %= 2f * Math.PI.toFloat()
             cameraPosition.x = Math.cos(cameraPositionRadians.toDouble()).toFloat() * cameraDistance
             cameraPosition.z = Math.sin(cameraPositionRadians.toDouble()).toFloat() * cameraDistance
-            camera.setPosition(cameraPosition)
+            camera.transform.setPosition(cameraPosition)
 
             // render
             if (pendingWidth != width || pendingHeight != height) {

@@ -1,6 +1,8 @@
 package com.pux0r3.lwjgltest
 
+import org.joml.Math
 import org.joml.Matrix4f
+import org.joml.Quaternionf
 import org.joml.Vector3f
 import org.lwjgl.opengl.GL20
 import org.lwjgl.system.MemoryStack
@@ -11,8 +13,9 @@ class LookAtPerspectiveCamera(
         aspect: Float,
         near: Float = .01f,
         far: Float = 100f,
-        position: Vector3f = Vector3f(),
         target: Vector3f = Vector3f()) : ICamera {
+    override val transform = Transform()
+
     private var perspectiveDirty = true
     private var _fov: Float = fov
         set(value) {
@@ -36,8 +39,6 @@ class LookAtPerspectiveCamera(
         }
     private var perspectiveMatrix = Matrix4f()
     private var viewMatrix = Matrix4f()
-    private var viewDirty = true
-    private var _position: Vector3f = position
     private var _target: Vector3f = target
     private val upVector = Vector3f(0f, 1f, 0f)
 
@@ -48,18 +49,12 @@ class LookAtPerspectiveCamera(
     }
 
     override fun loadUniform(uniformId: Int) {
-        var updateVPMatrix = false
         if (perspectiveDirty) {
             updatePerspectiveMatrix()
-            updateVPMatrix = true
         }
-        if (viewDirty) {
-            updateViewMatrix()
-            updateVPMatrix = true
-        }
-        if (updateVPMatrix) {
-            updateViewProjectionMatrix()
-        }
+        updateViewMatrix()
+        updateViewProjectionMatrix()
+
         MemoryStack.stackPush().use {
             val nativeMatrix = it.mallocFloat(16)
             viewProjectionMatrix.get(nativeMatrix)
@@ -74,30 +69,46 @@ class LookAtPerspectiveCamera(
     }
 
     private fun updateViewMatrix() {
-        viewMatrix.setLookAt(_position, _target, upVector)
-        viewDirty = false
+        /*
+         * For some reason, [Quaternionf.lookAlong] isn't working as I expect. I manually build a quaternion here that
+         * sets its -z vector to look at the target. It also corrects its up vector to face up.
+         *
+         * TODO: actually make this efficient
+         */
+
+        // get the vector to the target
+        val position = Vector3f()
+        transform.getPosition(position)
+        val vectorToTarget = Vector3f(_target)
+        vectorToTarget.sub(position)
+        vectorToTarget.normalize()
+
+        // rotate to point -z along this vector
+        val rotation = Quaternionf()
+        rotation.rotationTo(Vector3f(0f, 0f, -1f), vectorToTarget)
+
+        // compute the current up as [fromUp]. Compute the target up as [targetUp]. [targetUp] must be perpendicular to forward
+        val forward = Vector3f(0f, 0f, 1f)
+        rotation.transform(forward)
+        val fromUp = Vector3f(0f, 1f, 0f)
+        rotation.transform(fromUp)
+        val targetUp = Vector3f()
+        forward.cross(Vector3f(0f, 1f, 0f), targetUp).cross(forward)
+
+        // correct the quaternion so up is up
+        val correction = Quaternionf()
+        correction.rotationTo(fromUp, targetUp)
+        rotation.premul(correction)
+
+        // apply the rotation to the transform
+        transform.setRotation(rotation)
+
+        // get our view matrix
+        transform.getInverseWorldMatrix(viewMatrix)
     }
 
     private fun updateViewProjectionMatrix() {
         viewProjectionMatrix.set(perspectiveMatrix).mul(viewMatrix)
-    }
-
-    /**
-     * Sets the position of this camera to the given position
-     * note that this value is copied in
-     * @param position our new position
-     */
-    fun setPosition(position: Vector3f) {
-        _position.set(position)
-        viewDirty = true
-    }
-
-    /**
-     * Retrieves the position of this camera
-     * @param outPosition vector that will hold this camera's position
-     */
-    fun getPosition(outPosition: Vector3f) {
-        outPosition.set(_position)
     }
 
     /**
@@ -107,7 +118,6 @@ class LookAtPerspectiveCamera(
      */
     fun setTarget(target: Vector3f) {
         _target = target
-        viewDirty = true
     }
 
     /**

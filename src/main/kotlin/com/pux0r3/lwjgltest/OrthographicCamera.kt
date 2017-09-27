@@ -9,8 +9,8 @@ import org.lwjgl.system.NativeResource
 class OrthographicCamera(
         private val orthoHeight: Float,
         private val near: Float = -1f,
-        private val far: Float = 1f,
-        var position: Vector3f = Vector3f()): ICamera {
+        private val far: Float = 1f): ICamera {
+    override val transform = Transform()
     private var projectionMatrix = Matrix4f()
 
     override fun setResolution(width: Int, height: Int) {
@@ -26,9 +26,9 @@ class OrthographicCamera(
 
     override fun loadUniform(uniformId: Int) {
         // TODO: only recalculate when changed
-        val inversePosition = Vector3f(position)
-        inversePosition.negate()
-        val viewProjection = Matrix4f().set(projectionMatrix).translate(inversePosition)
+        val viewMatrix = Matrix4f()
+        transform.getInverseWorldMatrix(viewMatrix)
+        val viewProjection = Matrix4f().set(projectionMatrix).mul(viewMatrix)
         stackPush().use {
             val nativeMatrix = it.mallocFloat(16)
             viewProjection.get(nativeMatrix)
