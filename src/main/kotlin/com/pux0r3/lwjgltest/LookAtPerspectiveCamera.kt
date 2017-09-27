@@ -48,6 +48,10 @@ class LookAtPerspectiveCamera(
         _aspect = width.toFloat() / height.toFloat()
     }
 
+    /**
+     * Loads the uniform with our ViewProjection matrix
+     * TODO: Shader should load the Uniform and we should just provide a Matrix accordingly
+     */
     override fun loadUniform(uniformId: Int) {
         if (perspectiveDirty) {
             updatePerspectiveMatrix()

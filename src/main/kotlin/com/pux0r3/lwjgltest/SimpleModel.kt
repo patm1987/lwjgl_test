@@ -16,6 +16,7 @@ class SimpleModel(
         val indices: Array<Short>) : NativeResource {
     val vertexBufferObject: Int = glGenBuffers()
     val indexBufferObject: Int = glGenBuffers()
+    val transform = Transform()
 
     private var vertexAttributes = positions.zip(normals) { position, normal -> VertexAttribute(position, normal) }
 

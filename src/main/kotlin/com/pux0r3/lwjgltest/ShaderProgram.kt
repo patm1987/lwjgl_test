@@ -1,8 +1,10 @@
 package com.pux0r3.lwjgltest
 
 import mu.KLogging
+import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f
+import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL20.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.NativeResource
@@ -21,6 +23,7 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
     val positionAttribute: Int
     val normalAttribute: Int
     val viewProjectionUniform: Int
+    val modelUniform: Int
 
     val worldAmbientColorUniform: Int
     val worldLightDirectionUniform: Int
@@ -43,6 +46,7 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
         positionAttribute = getAttributeLocation("position")
         normalAttribute = getAttributeLocation("normal")
         viewProjectionUniform = getUniformLocation("ViewProjectionMatrix")
+        modelUniform = getUniformLocation("ModelMatrix")
 
         worldAmbientColorUniform = getUniformLocation("WorldAmbient")
         worldLightDirectionUniform = getUniformLocation("WorldLightDirection")
@@ -153,6 +157,15 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
     inner class ActiveShader {
         fun renderModel(model: SimpleModel) {
             model.use {
+                MemoryStack.stackPush().use {
+                    val nativeMatrix = it.mallocFloat(16)
+                    val modelMatrix = Matrix4f()
+                    model.transform.getWorldMatrix(modelMatrix)
+                    modelMatrix.get(nativeMatrix)
+
+                    GL20.glUniformMatrix4fv(modelUniform, false, nativeMatrix)
+                }
+
                 loadPositions(positionAttribute)
                 loadNormals(normalAttribute)
                 drawElements()
