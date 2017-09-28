@@ -36,6 +36,7 @@ class Game(private var width: Int, private var height: Int) {
 
     // cache the ship model for some hacky fun
     private var ship: SimpleModel? = null
+    private var shipMaterial: Material? = null
 
     init {
         camera.transform.setPosition(Vector3f(0f, .5f, -10f))
@@ -167,7 +168,6 @@ class Game(private var width: Int, private var height: Int) {
             glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
             shader?.use {
-                // TODO: make shader handling smarter. the model has a reference to the shader, but we don't want it to
                 // call use to reduce redundant state sets
                 models.forEach {
                     renderModel(it)
@@ -198,6 +198,7 @@ class Game(private var width: Int, private var height: Int) {
 
     private fun createModels() {
         ship = ObjImporter.importFile("/models/ship.obj")
+        shipMaterial = Material.loadFromFile("/models/ship.mtl")
         ship?.let { models.add(it) }
     }
 
