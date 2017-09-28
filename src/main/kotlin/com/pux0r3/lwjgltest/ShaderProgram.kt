@@ -12,6 +12,9 @@ import org.lwjgl.system.NativeResource
 @DslMarker
 annotation class ShaderTagMarker
 
+/**
+ * Use this to create a shader as a sort of DSL
+ */
 fun shader(cb: ShaderProgram.Builder.() -> Unit): ShaderProgram {
     val builder = ShaderProgram.Builder()
     builder.cb()
@@ -19,9 +22,13 @@ fun shader(cb: ShaderProgram.Builder.() -> Unit): ShaderProgram {
 }
 
 /**
- * Created by pux19 on 5/20/2017.
+ * Represents a shader that we will use to render
+ * @param vertexSource the full sourcecode of the vertex shader, *NOT A FILENAME*
+ * @param fragmentSource the full sourcecode of the fragment shader, *NOT A FILENAME*
+ * @param attributeNames the names of all this shader's attributes
+ * @param uniformNames the names of all this shader's uniforms
  */
-class ShaderProgram(
+class ShaderProgram private constructor(
         vertexSource: String,
         fragmentSource: String,
         attributeNames: Attributes,
@@ -200,7 +207,14 @@ class ShaderProgram(
 
     @ShaderTagMarker
     class Builder {
+        /**
+         * For clarity: this is the _FILENAME_ of the vertex shader, not the actual source
+         */
         var vertexSource: String = ""
+
+        /**
+         * For clarity: this is the _FILENAME_ of the fragment shader, not the actual source
+         */
         var fragmentSource: String = ""
         private val attributes: Attributes = Attributes()
         private val uniforms: Uniforms = Uniforms()
@@ -222,12 +236,20 @@ class ShaderProgram(
         }
     }
 
+    /**
+     * This defines the names of all the attributes this [ShaderProgram] will care about in the actual shader source so
+     * I can load them correctly
+     */
     @ShaderTagMarker
     class Attributes {
         var position: String = ""
         var normal: String = ""
     }
 
+    /**
+     * This defines the names of all the uniforms this [ShaderProgram] will care about in the shader source so I can
+     * load them correctly
+     */
     @ShaderTagMarker
     class Uniforms {
         var viewProjectionMatrix: String = ""
