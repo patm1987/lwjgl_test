@@ -198,7 +198,10 @@ class Game(private var width: Int, private var height: Int) {
 
     private fun createModels() {
         ship = ObjImporter.importFile("/models/ship.obj")
-        shipMaterial = Material.loadFromFile("/models/ship.mtl")
+        shipMaterial = material {
+            src { "/models/ship.mtl" }
+            shader { shader!! }
+        }
         ship?.let { models.add(it) }
     }
 
