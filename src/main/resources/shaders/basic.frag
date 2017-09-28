@@ -6,6 +6,8 @@ out vec4 fragColor;
 uniform vec4 WorldAmbient;
 uniform vec4 WorldLightColor;
 
+uniform vec4 ModelAmbient;
+
 void main() {
-    fragColor = WorldAmbient + normalDot * WorldLightColor;
+    fragColor = WorldAmbient * ModelAmbient + normalDot * WorldLightColor;
 }

@@ -17,8 +17,7 @@ class Material private constructor(
         val ambient: Vector3f,
         val diffuse: Vector3f,
         val specular: Vector3f,
-        val specularExponent: Float,
-        val shader: ShaderProgram) {
+        val specularExponent: Float) {
 
     companion object : KLogging() {
 
@@ -57,10 +56,6 @@ class Material private constructor(
         fun setSpecularExponent(exponent: Float): Builder {
             specularExponent = exponent
             return this
-        }
-
-        fun shader(cb: ()->ShaderProgram) {
-            this.shader = cb()
         }
 
         fun src(cb: ()->String) {
@@ -104,7 +99,7 @@ class Material private constructor(
             materialFile?.let { loadFromFile(it) }
 
             // throw an error on bad shader, not a typo
-            return Material(name, ambient, diffuse, specular, specularExponent, shader!!)
+            return Material(name, ambient, diffuse, specular, specularExponent)
         }
     }
 }

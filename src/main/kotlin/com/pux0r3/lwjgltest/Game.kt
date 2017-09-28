@@ -170,7 +170,7 @@ class Game(private var width: Int, private var height: Int) {
             shader?.use {
                 // call use to reduce redundant state sets
                 models.forEach {
-                    renderModel(it)
+                    renderModel(it, shipMaterial!!)
                 }
             }
 
@@ -200,7 +200,6 @@ class Game(private var width: Int, private var height: Int) {
         ship = ObjImporter.importFile("/models/ship.obj")
         shipMaterial = material {
             src { "/models/ship.mtl" }
-            shader { shader!! }
         }
         ship?.let { models.add(it) }
     }

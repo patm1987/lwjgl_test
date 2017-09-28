@@ -28,6 +28,7 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
     val worldAmbientColorUniform: Int
     val worldLightDirectionUniform: Int
     val worldLightColorUniform: Int
+    val modelAmbientColorUniform: Int
 
     var lightDirection: Vector3f = Vector3f(.5f, .5f, .5f).normalize()
     var ambientColor: Vector4f = Vector4f(.5f, .5f, .5f, 1f)
@@ -51,6 +52,7 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
         worldAmbientColorUniform = getUniformLocation("WorldAmbient")
         worldLightDirectionUniform = getUniformLocation("WorldLightDirection")
         worldLightColorUniform = getUniformLocation("WorldLightColor")
+        modelAmbientColorUniform = getUniformLocation("ModelAmbient")
         glUseProgram(0)
     }
 
@@ -155,7 +157,9 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
      * Class used in conjunction with [use] to allow some caller to render a model using this shader.
      */
     inner class ActiveShader {
-        fun renderModel(model: SimpleModel) {
+        fun renderModel(model: SimpleModel, material: Material) {
+            glUniform4f(modelAmbientColorUniform, material.ambient.x, material.ambient.y, material.ambient.z, 1f)
+
             model.use {
                 MemoryStack.stackPush().use {
                     val nativeMatrix = it.mallocFloat(16)
