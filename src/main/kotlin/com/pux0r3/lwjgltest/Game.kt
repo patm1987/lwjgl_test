@@ -22,7 +22,7 @@ class Game(private var width: Int, private var height: Int) {
     companion object : KLogging()
 
     private var window: Long = NULL
-    private var shader: ShaderProgram? = null
+    private var shipShader: ShaderProgram? = null
     private var models = mutableListOf<SimpleModel>()
     private val camera = LookAtPerspectiveCamera(
             Math.toRadians(45.0).toFloat(),
@@ -167,7 +167,7 @@ class Game(private var width: Int, private var height: Int) {
             }
             glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
-            shader?.use {
+            shipShader?.use {
                 // call use to reduce redundant state sets
                 models.forEach {
                     renderModel(it, shipMaterial!!)
@@ -185,15 +185,28 @@ class Game(private var width: Int, private var height: Int) {
 
     private fun createShaders() {
         camera.setResolution(width, height)
-        shader = ShaderProgram(
-                Resources.loadAssetAsString("/shaders/basic.vert"),
-                Resources.loadAssetAsString("/shaders/basic.frag"),
-                camera)
+        shipShader = shader {
+            vertexSource = "/shaders/basic.vert"
+            fragmentSource = "/shaders/basic.frag"
+            attributes {
+                position = "position"
+                normal = "normal"
+            }
+            uniforms {
+                viewProjectionMatrix = "ViewProjectionMatrix"
+                modelMatrix = "ModelMatrix"
+                worldAmbientColor = "WorldAmbient"
+                worldLightDirection = "WorldLightDirection"
+                worldLightColor = "WorldLightColor"
+                modelAmbientColor = "ModelAmbient"
+            }
+        }
+        shipShader?.camera = camera
     }
 
     private fun freeShaders() {
-        shader?.free()
-        shader = null
+        shipShader?.free()
+        shipShader = null
     }
 
     private fun createModels() {

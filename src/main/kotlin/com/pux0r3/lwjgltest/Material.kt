@@ -6,6 +6,9 @@ import org.joml.Vector3f
 @DslMarker
 annotation class MaterialTagMarker
 
+/**
+ * Use this function to create a Material using a pseudo-DSL
+ */
 fun material(cb: Material.Builder.() -> Unit): Material {
     val builder = Material.Builder()
     builder.cb()

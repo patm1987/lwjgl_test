@@ -9,10 +9,23 @@ import org.lwjgl.opengl.GL20.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.NativeResource
 
+@DslMarker
+annotation class ShaderTagMarker
+
+fun shader(cb: ShaderProgram.Builder.() -> Unit): ShaderProgram {
+    val builder = ShaderProgram.Builder()
+    builder.cb()
+    return builder.build()
+}
+
 /**
  * Created by pux19 on 5/20/2017.
  */
-class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: ICamera) : NativeResource {
+class ShaderProgram(
+        vertexSource: String,
+        fragmentSource: String,
+        attributeNames: Attributes,
+        uniformNames: Uniforms) : NativeResource {
     companion object : KLogging()
 
     // TODO: I want to maintain all of these states internally rather than setting them externally
@@ -34,6 +47,8 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
     var ambientColor: Vector4f = Vector4f(.5f, .5f, .5f, 1f)
     var lightColor: Vector4f = Vector4f(.5f, .5f, .5f, 1f)
 
+    var camera: ICamera? = null
+
     /**
      * When a call to [use] is made, the callback acts on this object. I make it private here so that you may only
      * attempt to render a model after this shader program has been properly made current
@@ -44,15 +59,15 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
         link()
 
         glUseProgram(programId)
-        positionAttribute = getAttributeLocation("position")
-        normalAttribute = getAttributeLocation("normal")
-        viewProjectionUniform = getUniformLocation("ViewProjectionMatrix")
-        modelUniform = getUniformLocation("ModelMatrix")
+        positionAttribute = getAttributeLocation(attributeNames.position)
+        normalAttribute = getAttributeLocation(attributeNames.normal)
+        viewProjectionUniform = getUniformLocation(uniformNames.viewProjectionMatrix)
+        modelUniform = getUniformLocation(uniformNames.modelMatrix)
 
-        worldAmbientColorUniform = getUniformLocation("WorldAmbient")
-        worldLightDirectionUniform = getUniformLocation("WorldLightDirection")
-        worldLightColorUniform = getUniformLocation("WorldLightColor")
-        modelAmbientColorUniform = getUniformLocation("ModelAmbient")
+        worldAmbientColorUniform = getUniformLocation(uniformNames.worldAmbientColor)
+        worldLightDirectionUniform = getUniformLocation(uniformNames.worldLightDirection)
+        worldLightColorUniform = getUniformLocation(uniformNames.worldLightColor)
+        modelAmbientColorUniform = getUniformLocation(uniformNames.modelAmbientColor)
         glUseProgram(0)
     }
 
@@ -63,6 +78,12 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
     }
 
     fun use(callback: ActiveShader.() -> Unit) {
+        val camera = camera
+        if (camera == null) {
+            logger.warn { "There is no active camera, we will skip this render" }
+            return
+        }
+
         glUseProgram(programId)
         glEnableVertexAttribArray(positionAttribute)
         glEnableVertexAttribArray(normalAttribute)
@@ -175,5 +196,45 @@ class ShaderProgram(vertexSource: String, fragmentSource: String, val camera: IC
                 drawElements()
             }
         }
+    }
+
+    @ShaderTagMarker
+    class Builder {
+        var vertexSource: String = ""
+        var fragmentSource: String = ""
+        private val attributes: Attributes = Attributes()
+        private val uniforms: Uniforms = Uniforms()
+
+        fun attributes(cb: Attributes.() -> Unit) {
+            this.attributes.cb()
+        }
+
+        fun uniforms(cb: Uniforms.() -> Unit) {
+            this.uniforms.cb()
+        }
+
+        fun build(): ShaderProgram {
+            return ShaderProgram(
+                    Resources.loadAssetAsString(vertexSource),
+                    Resources.loadAssetAsString(fragmentSource),
+                    attributes,
+                    uniforms)
+        }
+    }
+
+    @ShaderTagMarker
+    class Attributes {
+        var position: String = ""
+        var normal: String = ""
+    }
+
+    @ShaderTagMarker
+    class Uniforms {
+        var viewProjectionMatrix: String = ""
+        var modelMatrix: String = ""
+        var worldAmbientColor: String = ""
+        var worldLightDirection: String = ""
+        var worldLightColor: String = ""
+        var modelAmbientColor: String = ""
     }
 }
