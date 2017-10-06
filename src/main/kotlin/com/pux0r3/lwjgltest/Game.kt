@@ -215,6 +215,14 @@ class Game(private var width: Int, private var height: Int) {
             src { "/models/ship.mtl" }
         }
         ship?.let { models.add(it) }
+
+        val ground = SimpleModel(
+                arrayOf(Vector3f(-1f, 0f, -1f), Vector3f(-1f, 0f, 1f), Vector3f(1f, 0f, 1f), Vector3f(1f, 0f, -1f)),
+                arrayOf(Vector3f(0f, 1f, 0f), Vector3f(0f, 1f, 0f), Vector3f(0f, 1f, 0f), Vector3f(0f, 1f, 0f)),
+                arrayOf(0, 1, 2, 0, 2, 3))
+        ground.transform.setPosition(Vector3f(0f, -5f, 0f))
+        ground.transform.setScale(Vector3f(5f, 5f, 5f))
+        models.add(ground)
     }
 
     private fun freeModels() {
