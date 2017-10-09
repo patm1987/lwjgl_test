@@ -116,6 +116,8 @@ class Game(private var width: Int, private var height: Int) {
         createModels()
 
         glEnable(GL_DEPTH_TEST)
+        glEnable(GL_CULL_FACE)
+        glCullFace(GL_BACK)
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
 
         var cameraPositionRadians = 0f
