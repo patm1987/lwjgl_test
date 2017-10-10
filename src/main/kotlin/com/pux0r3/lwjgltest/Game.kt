@@ -31,6 +31,9 @@ class Game(private var width: Int, private var height: Int) {
             100f,
             Vector3f())
 
+    // TODO: this is very temp
+    private var halfEdgeModels = mutableListOf<HalfEdgeModel>()
+
     private var pendingWidth = 0
     private var pendingHeight = 0
 
@@ -174,6 +177,10 @@ class Game(private var width: Int, private var height: Int) {
                 models.forEach {
                     renderModel(it, shipMaterial!!)
                 }
+
+                halfEdgeModels.forEach {
+                    renderModel(it, shipMaterial!!)
+                }
             }
 
             glfwSwapBuffers(window)
@@ -218,14 +225,6 @@ class Game(private var width: Int, private var height: Int) {
         }
         ship?.let { models.add(it) }
 
-        val ground = SimpleModel(
-                arrayOf(Vector3f(-1f, 0f, -1f), Vector3f(-1f, 0f, 1f), Vector3f(1f, 0f, 1f), Vector3f(1f, 0f, -1f)),
-                arrayOf(Vector3f(0f, 1f, 0f), Vector3f(0f, 1f, 0f), Vector3f(0f, 1f, 0f), Vector3f(0f, 1f, 0f)),
-                arrayOf(0, 1, 2, 0, 2, 3))
-        ground.transform.setPosition(Vector3f(0f, -5f, 0f))
-        ground.transform.setScale(Vector3f(5f, 5f, 5f))
-        models.add(ground)
-
         val halfEdgeGround = halfEdgeModel {
             vertex {
                 position = Vector3f(-1f, 0f, -1f)
@@ -246,6 +245,9 @@ class Game(private var width: Int, private var height: Int) {
             face(0, 1, 2)
             face(0, 2, 3)
         }
+        halfEdgeGround.transform.setPosition(Vector3f(0f, -5f, 0f))
+        halfEdgeGround.transform.setScale(Vector3f(5f, 5f, 5f))
+        halfEdgeModels.add(halfEdgeGround)
     }
 
     private fun freeModels() {
