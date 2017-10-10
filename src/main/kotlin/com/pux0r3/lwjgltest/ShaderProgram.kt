@@ -95,7 +95,6 @@ class ShaderProgram private constructor(
         glEnableVertexAttribArray(positionAttribute)
         glEnableVertexAttribArray(normalAttribute)
 
-        // TODO: I'm actually going to want to make the MVP matrix. So I'll want to change this
         camera.loadUniform(viewProjectionUniform)
         MemoryStack.stackPush().use {
             val lightDirectionBuffer = it.mallocFloat(3)

@@ -38,7 +38,6 @@ class Material private constructor(
         private val diffuse: Vector3f = Vector3f()
         private val specular: Vector3f = Vector3f()
         private var specularExponent: Float = 0f
-        private var shader: ShaderProgram? = null
         private var materialFile: String? = null
 
         fun setAmbient(color: Vector3f): Builder {

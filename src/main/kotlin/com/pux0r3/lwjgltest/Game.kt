@@ -225,6 +225,27 @@ class Game(private var width: Int, private var height: Int) {
         ground.transform.setPosition(Vector3f(0f, -5f, 0f))
         ground.transform.setScale(Vector3f(5f, 5f, 5f))
         models.add(ground)
+
+        val halfEdgeGround = halfEdgeModel {
+            vertex {
+                position = Vector3f(-1f, 0f, -1f)
+                normal = Vector3f(0f, 1f, 0f)
+            }
+            vertex {
+                position = Vector3f(-1f, 0f, 1f)
+                normal = Vector3f(0f, 1f, 0f)
+            }
+            vertex {
+                position = Vector3f(1f, 0f, 1f)
+                normal = Vector3f(0f, 1f, 0f)
+            }
+            vertex {
+                position = Vector3f(1f, 0f, -1f)
+                normal = Vector3f(0f, 1f, 0f)
+            }
+            face(0, 1, 2)
+            face(0, 2, 3)
+        }
     }
 
     private fun freeModels() {
