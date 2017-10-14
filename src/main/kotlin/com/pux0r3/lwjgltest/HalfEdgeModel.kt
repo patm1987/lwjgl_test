@@ -13,11 +13,13 @@ fun halfEdgeModel(cb: HalfEdgeModel.Builder.() -> Unit): HalfEdgeModel {
     return builder.build()
 }
 
-class HalfEdgeModel(val edges: Array<HalfEdge>, val vertices: Array<Vertex>, val faces: Array<Face>): NativeResource {
+class HalfEdgeModel(val edges: Array<HalfEdge>, val vertices: Array<Vertex>, val faces: Array<Face>) : NativeResource {
 
     val vertexBufferObject: Int = glGenBuffers()
+
+    // TODO: one or the other. I don't need indices and adjacencies!
     val indexBufferObject: Int = glGenBuffers()
-    // TODO: I'll probably want to the faces in the GPU at some point, I just don't have a reason to yet
+    val adjacencyBufferObject: Int = glGenBuffers()
 
     val transform = Transform()
 
@@ -30,12 +32,25 @@ class HalfEdgeModel(val edges: Array<HalfEdge>, val vertices: Array<Vertex>, val
     init {
         stackPush().use {
             // write each edge into an index buffer
-            // TODO: use GL_TRIANGLES_ADJACENCY instead for adjacency info
             val indexBuffer = it.mallocShort(edges.size)
             edges.forEach { halfEdge ->
                 indexBuffer.put(halfEdge.vertexIndex.toShort())
             }
             indexBuffer.flip()
+
+            // build an adjacency triangle list
+            val adjacencyIndexBuffer = it.mallocShort(edges.size * 2)
+            edges.forEach { halfEdge ->
+                indexBuffer.put(halfEdge.vertexIndex.toShort())
+                if (halfEdge.oppositeEdgeIndex != INVALID_EDGE_INDEX) {
+                    val oppositeEdge = edges[halfEdge.oppositeEdgeIndex]
+                    val oppositeNextEdge = edges[oppositeEdge.nextEdgeIndex]
+                    indexBuffer.put(oppositeNextEdge.vertexIndex.toShort())
+                } else {
+                    indexBuffer.put(halfEdge.vertexIndex.toShort())
+                }
+            }
+            adjacencyIndexBuffer.flip()
 
             // write each triangle into an attribute buffer
             val vertexBuffer = it.malloc(Vertex.VERTEX_SIZE * vertices.size)
@@ -50,6 +65,10 @@ class HalfEdgeModel(val edges: Array<HalfEdge>, val vertices: Array<Vertex>, val
                 glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW)
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBuffer, GL_STATIC_DRAW)
             }
+            useAdjacency {
+                // TODO: I'm double binding GL_ARRAY_BUFFER, fix this!
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, adjacencyIndexBuffer, GL_STATIC_DRAW)
+            }
         }
     }
 
@@ -59,6 +78,14 @@ class HalfEdgeModel(val edges: Array<HalfEdge>, val vertices: Array<Vertex>, val
         activeModel.callback()
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
+    }
+
+    fun useAdjacency(callback: HalfEdgeModel.ActiveModel.() -> Unit) {
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, adjacencyBufferObject)
+        activeModel.callback()
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
     }
 
     override fun free() {
