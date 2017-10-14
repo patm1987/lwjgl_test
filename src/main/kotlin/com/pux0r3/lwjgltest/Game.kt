@@ -23,7 +23,7 @@ class Game(private var width: Int, private var height: Int) {
 
     private var window: Long = NULL
     private var shipShader: ShaderProgram? = null
-    private var models = mutableListOf<SimpleModel>()
+    private var models = mutableListOf<HalfEdgeModel>()
     private val camera = LookAtPerspectiveCamera(
             Math.toRadians(45.0).toFloat(),
             1f,
@@ -31,14 +31,11 @@ class Game(private var width: Int, private var height: Int) {
             100f,
             Vector3f())
 
-    // TODO: this is very temp
-    private var halfEdgeModels = mutableListOf<HalfEdgeModel>()
-
     private var pendingWidth = 0
     private var pendingHeight = 0
 
     // cache the ship model for some hacky fun
-    private var ship: SimpleModel? = null
+    private var ship: HalfEdgeModel? = null
     private var shipMaterial: Material? = null
 
     init {
@@ -177,10 +174,6 @@ class Game(private var width: Int, private var height: Int) {
                 models.forEach {
                     renderModel(it, shipMaterial!!)
                 }
-
-                halfEdgeModels.forEach {
-                    renderModel(it, shipMaterial!!)
-                }
             }
 
             glfwSwapBuffers(window)
@@ -247,7 +240,7 @@ class Game(private var width: Int, private var height: Int) {
         }
         halfEdgeGround.transform.setPosition(Vector3f(0f, -5f, 0f))
         halfEdgeGround.transform.setScale(Vector3f(5f, 5f, 5f))
-        halfEdgeModels.add(halfEdgeGround)
+        models.add(halfEdgeGround)
     }
 
     private fun freeModels() {

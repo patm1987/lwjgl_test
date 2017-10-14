@@ -184,27 +184,6 @@ class ShaderProgram private constructor(
      * Class used in conjunction with [use] to allow some caller to render a model using this shader.
      */
     inner class ActiveShader {
-        // TODO: either get rid of SimpleModel or create an interface to encapsulate everything happening here
-
-        fun renderModel(model: SimpleModel, material: Material) {
-            glUniform4f(modelAmbientColorUniform, material.ambient.x, material.ambient.y, material.ambient.z, 1f)
-
-            model.use {
-                MemoryStack.stackPush().use {
-                    val nativeMatrix = it.mallocFloat(16)
-                    val modelMatrix = Matrix4f()
-                    model.transform.getWorldMatrix(modelMatrix)
-                    modelMatrix.get(nativeMatrix)
-
-                    GL20.glUniformMatrix4fv(modelUniform, false, nativeMatrix)
-                }
-
-                loadPositions(positionAttribute)
-                loadNormals(normalAttribute)
-                drawElements()
-            }
-        }
-
         fun renderModel(model: HalfEdgeModel, material: Material) {
             glUniform4f(modelAmbientColorUniform, material.ambient.x, material.ambient.y, material.ambient.z, 1f)
 

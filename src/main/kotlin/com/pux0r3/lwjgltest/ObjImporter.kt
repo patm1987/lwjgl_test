@@ -3,10 +3,10 @@ package com.pux0r3.lwjgltest
 import org.joml.Vector3f
 
 object ObjImporter {
-    fun importFile(filename: String): SimpleModel {
+    fun importFile(filename: String): HalfEdgeModel {
         val vertices = mutableListOf<Vector3f>()
         val normals = mutableListOf<Vector3f>()
-        val indices = mutableListOf<Short>()
+        val indices = mutableListOf<Int>()
 
         Resources.loadAssetAsReader(filename).use { objFile ->
             objFile.lines().forEach { line ->
@@ -29,17 +29,31 @@ object ObjImporter {
             }
         }
 
-        return SimpleModel(vertices.toTypedArray(), normals.toTypedArray(), indices.toTypedArray())
+        return halfEdgeModel {
+            vertices.zip(normals).forEach { (pos, norm) ->
+                vertex {
+                    position = pos
+                    normal = norm
+                }
+            }
+
+            // I really wish I had a normal for loop...
+            var faceIndex = 0
+            while (faceIndex + 2 < indices.size) {
+                face(indices[faceIndex], indices[faceIndex + 1], indices[faceIndex + 2])
+                faceIndex += 3
+            }
+        }
     }
 
-    data class ObjFace(val vertexIndex: Short, val textureIndex: Short?, val normalIndex: Short?) {
+    data class ObjFace(val vertexIndex: Int, val textureIndex: Int?, val normalIndex: Int?) {
         companion object {
             fun parse(data: String): ObjFace {
                 val faceParts = data.split('/')
                 val vertex = faceParts[0].toShort() - 1
                 val texture = (if (faceParts.size > 1) faceParts[1].toShortOrNull() else null)?.let { it - 1 }
                 val normal = (if (faceParts.size > 2) faceParts[2].toShortOrNull() else null)?.let { it - 1 }
-                return ObjFace(vertex.toShort(), texture?.toShort(), normal?.toShort())
+                return ObjFace(vertex, texture, normal)
             }
         }
     }

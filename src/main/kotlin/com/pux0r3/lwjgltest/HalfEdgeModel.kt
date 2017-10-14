@@ -2,7 +2,6 @@ package com.pux0r3.lwjgltest
 
 import org.joml.Vector3f
 import org.lwjgl.opengl.GL11
-import org.lwjgl.opengl.GL15
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL20
 import org.lwjgl.system.MemoryStack.stackPush
