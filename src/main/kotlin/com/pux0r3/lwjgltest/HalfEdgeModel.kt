@@ -41,13 +41,13 @@ class HalfEdgeModel(val edges: Array<HalfEdge>, val vertices: Array<Vertex>, val
             // build an adjacency triangle list
             val adjacencyIndexBuffer = it.mallocShort(edges.size * 2)
             edges.forEach { halfEdge ->
-                indexBuffer.put(halfEdge.vertexIndex.toShort())
+                adjacencyIndexBuffer.put(halfEdge.vertexIndex.toShort())
                 if (halfEdge.oppositeEdgeIndex != INVALID_EDGE_INDEX) {
                     val oppositeEdge = edges[halfEdge.oppositeEdgeIndex]
                     val oppositeNextEdge = edges[oppositeEdge.nextEdgeIndex]
-                    indexBuffer.put(oppositeNextEdge.vertexIndex.toShort())
+                    adjacencyIndexBuffer.put(oppositeNextEdge.vertexIndex.toShort())
                 } else {
-                    indexBuffer.put(halfEdge.vertexIndex.toShort())
+                    adjacencyIndexBuffer.put(halfEdge.vertexIndex.toShort())
                 }
             }
             adjacencyIndexBuffer.flip()

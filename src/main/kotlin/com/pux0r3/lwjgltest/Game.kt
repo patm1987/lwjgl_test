@@ -23,6 +23,7 @@ class Game(private var width: Int, private var height: Int) {
 
     private var window: Long = NULL
     private var shipShader: ShaderProgram? = null
+    private var outlineShader: OutlineShader? = null
     private var models = mutableListOf<HalfEdgeModel>()
     private val camera = LookAtPerspectiveCamera(
             Math.toRadians(45.0).toFloat(),
@@ -204,11 +205,18 @@ class Game(private var width: Int, private var height: Int) {
             }
         }
         shipShader?.camera = camera
+
+        outlineShader = OutlineShader(
+                Resources.loadAssetAsString("/shaders/outline.vert"),
+                Resources.loadAssetAsString("/shaders/outline.geom"),
+                Resources.loadAssetAsString("/shaders/outline.frag"))
     }
 
     private fun freeShaders() {
         shipShader?.free()
         shipShader = null
+        outlineShader?.free()
+        outlineShader = null
     }
 
     private fun createModels() {
