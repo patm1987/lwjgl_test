@@ -1,10 +1,8 @@
 package com.pux0r3.lwjgltest
 
 import org.joml.Vector3f
-import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL15.*
-import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL20.glVertexAttribPointer
 import org.lwjgl.opengl.GL32.GL_TRIANGLES_ADJACENCY
 import org.lwjgl.system.MemoryStack.stackPush
@@ -46,9 +44,11 @@ class HalfEdgeModel(val edges: Array<HalfEdge>, val vertices: Array<Vertex>, val
             edges.forEach { halfEdge ->
                 adjacencyIndexBuffer.put(halfEdge.vertexIndex.toShort())
                 if (halfEdge.oppositeEdgeIndex != INVALID_EDGE_INDEX) {
-                    val oppositeEdge = edges[halfEdge.oppositeEdgeIndex]
-                    val oppositeNextEdge = edges[oppositeEdge.nextEdgeIndex]
-                    adjacencyIndexBuffer.put(oppositeNextEdge.vertexIndex.toShort())
+                    val oppositeEdge = oppositeEdge(halfEdge)
+                    assert(oppositeEdge(oppositeEdge) == halfEdge)
+                    val outlier = nextEdge(nextEdge(oppositeEdge))
+                    assert(!vertexInFace(outlier.vertexIndex, halfEdge.faceIndex))
+                    adjacencyIndexBuffer.put(outlier.vertexIndex.toShort())
                 } else {
                     adjacencyIndexBuffer.put(halfEdge.vertexIndex.toShort())
                 }
@@ -73,6 +73,26 @@ class HalfEdgeModel(val edges: Array<HalfEdge>, val vertices: Array<Vertex>, val
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER, adjacencyIndexBuffer, GL_STATIC_DRAW)
             }
         }
+    }
+
+    fun oppositeEdge(edge: HalfEdge): HalfEdge {
+        return edges[edge.oppositeEdgeIndex]
+    }
+
+    fun nextEdge(edge: HalfEdge): HalfEdge {
+        return edges[edge.nextEdgeIndex]
+    }
+
+    fun vertexInFace(vertexIndex: Int, faceIndex: Int): Boolean {
+        val startEdge = faces[faceIndex].halfEdgeIndex
+        var currentEdge = startEdge
+        do {
+            if (edges[currentEdge].vertexIndex == vertexIndex) {
+                return true
+            }
+            currentEdge = edges[currentEdge].nextEdgeIndex
+        } while (currentEdge != startEdge)
+        return false
     }
 
     fun use(callback: HalfEdgeModel.ActiveModel.() -> Unit) {
@@ -154,33 +174,65 @@ class HalfEdgeModel(val edges: Array<HalfEdge>, val vertices: Array<Vertex>, val
 
             // create the face array, also generating the edges
             val faceArray: Array<Face> = faces.mapIndexed { index, faceBuilder ->
+
+                // the index of the first edge
                 val startIndex = edges.size
+
+                // build the edges
                 val e0 = EdgeBuilder(faceBuilder.v0, index, startIndex + 1)
                 val e1 = EdgeBuilder(faceBuilder.v1, index, startIndex + 2)
                 val e2 = EdgeBuilder(faceBuilder.v2, index, startIndex)
+
+                // cache the edges in the edge list
                 edges.add(e0)
                 edges.add(e1)
                 edges.add(e2)
+
+                // add this edge to the vertex list
+                vertices[faceBuilder.v0].edges.add(startIndex)
+                vertices[faceBuilder.v1].edges.add(startIndex + 1)
+                vertices[faceBuilder.v2].edges.add(startIndex + 2)
+
+                // create the face
                 Face(startIndex)
             }.toTypedArray()
 
-            // edges need to be hooked up to vertices
-            edges.forEachIndexed { index, edgeBuilder ->
-                if (vertices[edgeBuilder.vertexIndex].edge == null) {
-                    // if the position doesn't have an edge, set it
-                    vertices[edgeBuilder.vertexIndex].edge = index
-                } else {
-                    // otherwise set that position edge's opposite edge to this one and vice versa
-                    edgeBuilder.oppositeEdgeIndex = vertices[edgeBuilder.vertexIndex].edge!!
-                    edges[vertices[edgeBuilder.vertexIndex].edge!!].oppositeEdgeIndex = index
-                }
-            }
-
             // generate edges
-            val edgeArray: Array<HalfEdge> = edges.map { edgeBuilder -> HalfEdge(edgeBuilder.vertexIndex, edgeBuilder.nextEdgeIndex, edgeBuilder.oppositeEdgeIndex, edgeBuilder.faceIndex) }.toTypedArray()
+            val edgeArray: Array<HalfEdge> = edges.mapIndexed { index, edgeBuilder ->
+                // the edge opposite us starts at the vertex our next edge starts at and ends at our vertex
+                val oppositeStartVertexIndex = edges[edgeBuilder.nextEdgeIndex].vertexIndex
+                val oppositeStartVertex = vertices[oppositeStartVertexIndex]
+                val oppositeEdgeIndex = oppositeStartVertex.edges.firstOrNull { edgeIndex ->
+                    val testEdge = edges[edgeIndex]
+                    val testNextEdge = edges[testEdge.nextEdgeIndex]
+                    testNextEdge.vertexIndex == edgeBuilder.vertexIndex
+                } ?: INVALID_EDGE_INDEX
+
+                assert(index != oppositeEdgeIndex)
+                HalfEdge(edgeBuilder.vertexIndex, edgeBuilder.nextEdgeIndex, oppositeEdgeIndex, edgeBuilder.faceIndex)
+            }.toTypedArray()
 
             // vertices should be ready for generation
-            val vertexArray: Array<Vertex> = vertices.map { vertexBuilder -> Vertex(vertexBuilder.position, vertexBuilder.normal, vertexBuilder.edge!!) }.toTypedArray()
+            val vertexArray: Array<Vertex> = vertices.map { vertexBuilder ->
+                assert(!vertexBuilder.edges.isEmpty())
+                Vertex(vertexBuilder.position, vertexBuilder.normal, vertexBuilder.edges.first())
+            }.toTypedArray()
+
+            // make sure all the edges belong to this triangle and their opposites don't
+            assert(faceArray.all { face ->
+                val startEdgeIndex = face.halfEdgeIndex
+                var edge = edgeArray[startEdgeIndex]
+                while(edge.nextEdgeIndex != startEdgeIndex) {
+                    if (faceArray[edge.faceIndex] != face) {
+                        return@all false
+                    }
+                    if (edge.oppositeEdgeIndex != INVALID_EDGE_INDEX && faceArray[edgeArray[edge.oppositeEdgeIndex].faceIndex] == face) {
+                        return@all false
+                    }
+                    edge = edgeArray[edge.nextEdgeIndex]
+                }
+                return@all true
+            })
 
             return HalfEdgeModel(edgeArray, vertexArray, faceArray)
         }
@@ -189,17 +241,19 @@ class HalfEdgeModel(val edges: Array<HalfEdge>, val vertices: Array<Vertex>, val
     class VertexBuilder {
         var position: Vector3f = Vector3f()
         var normal: Vector3f = Vector3f()
-        var edge: Int? = null
+        val edges = mutableListOf<Int>()
     }
 
     class FaceBuilder(val v0: Int, val v1: Int, val v2: Int)
 
-    class EdgeBuilder(val vertexIndex: Int, val faceIndex: Int, val nextEdgeIndex: Int) {
-        var oppositeEdgeIndex: Int = INVALID_EDGE_INDEX // the opposite edge is optional
-    }
+    /**
+     * @param vertexIndex the index of the vertex that starts this edge
+     * @param faceIndex the face that this edge belongs to
+     * @param nextEdgeIndex the next edge in the list
+     */
+    class EdgeBuilder(val vertexIndex: Int, val faceIndex: Int, val nextEdgeIndex: Int)
 
     companion object {
         const val INVALID_EDGE_INDEX = -1
-        const val INVALID_VERTEX_INDEX = -1
     }
 }

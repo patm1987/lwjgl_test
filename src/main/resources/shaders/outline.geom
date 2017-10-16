@@ -19,7 +19,7 @@ bool frontFacing (vec2 v0, vec2 v1, vec2 v2) {
  * generates a thick edge from a pair of given points
  */
 void generateEdge(vec4 v0, vec4 v1) {
-    vec2 edgeDir = normalize(v1.xy-v0.xy);
+    vec3 edgeDir = normalize(v1.xyz - v0.xyz);
     vec2 edgeHeight = vec2(edgeDir.y, -edgeDir.x) * EdgeThickness;
 
     gl_Position = vec4(v0);

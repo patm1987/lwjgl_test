@@ -177,15 +177,11 @@ class Game(private var width: Int, private var height: Int) {
                 }
             }
 
-            glDisable(GL_DEPTH_TEST)
-//            glDisable(GL_CULL_FACE)
             outlineShader?.use {
                 models.forEach {
                     renderModel(it)
                 }
             }
-//            glEnable(GL_CULL_FACE)
-            glEnable(GL_DEPTH_TEST)
 
             glfwSwapBuffers(window)
             glfwPollEvents()
