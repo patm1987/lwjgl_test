@@ -2,8 +2,11 @@ package com.pux0r3.lwjgltest
 
 import org.joml.Vector3f
 import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL20
+import org.lwjgl.opengl.GL20.glVertexAttribPointer
+import org.lwjgl.opengl.GL32.GL_TRIANGLES_ADJACENCY
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.NativeResource
 
@@ -100,15 +103,19 @@ class HalfEdgeModel(val edges: Array<HalfEdge>, val vertices: Array<Vertex>, val
      */
     inner class ActiveModel {
         fun loadPositions(positionAttributeLocation: Int) {
-            GL20.glVertexAttribPointer(positionAttributeLocation, 3, GL11.GL_FLOAT, false, Vertex.VERTEX_SIZE, 0)
+            glVertexAttribPointer(positionAttributeLocation, 3, GL_FLOAT, false, Vertex.VERTEX_SIZE, 0)
         }
 
         fun loadNormals(normalAttributeLocation: Int) {
-            GL20.glVertexAttribPointer(normalAttributeLocation, 3, GL11.GL_FLOAT, true, Vertex.VERTEX_SIZE, Vertex.VECTOR_3_SIZE.toLong())
+            glVertexAttribPointer(normalAttributeLocation, 3, GL_FLOAT, true, Vertex.VERTEX_SIZE, Vertex.VECTOR_3_SIZE.toLong())
         }
 
         fun drawElements() {
-            GL11.glDrawElements(GL11.GL_TRIANGLES, edges.size, GL11.GL_UNSIGNED_SHORT, 0)
+            glDrawElements(GL_TRIANGLES, edges.size, GL_UNSIGNED_SHORT, 0)
+        }
+
+        fun drawElementsAdjacency() {
+            glDrawElements(GL_TRIANGLES_ADJACENCY, edges.size * 2, GL_UNSIGNED_SHORT, 0)
         }
     }
 

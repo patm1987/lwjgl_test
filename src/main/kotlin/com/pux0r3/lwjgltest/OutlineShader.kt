@@ -1,9 +1,12 @@
 package com.pux0r3.lwjgltest
 
+import org.joml.Matrix4f
 import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL20.*
 import org.lwjgl.opengl.GL32.GL_GEOMETRY_SHADER
+import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.NativeResource
+import kotlin.properties.Delegates
 
 /**
  * TODO: This _should_ be merged with [ShaderProgram], pay attention to feature overlaps!
@@ -11,7 +14,7 @@ import org.lwjgl.system.NativeResource
 class OutlineShader(
         val vertexShaderSource: String,
         val geometryShaderSource: String,
-        val fragmentShaderSource: String) : NativeResource{
+        val fragmentShaderSource: String) : NativeResource {
     val programId: Int = createProgram()
     private val vertexShader: Int = createShader(vertexShaderSource, GL_VERTEX_SHADER)
     private val geometryShader: Int = createShader(geometryShaderSource, GL_GEOMETRY_SHADER)
@@ -22,6 +25,14 @@ class OutlineShader(
     private val modelUniform: Int
     private val edgeThicknessUniform: Int
 
+    var camera: ICamera? = null
+
+    /**
+     * When a call to [use] is made, the callback acts on this object. I make it private here so that you may only
+     * attempt to render a model after this shader program has been properly made current
+     */
+    private val activeShader = ActiveShader()
+
     init {
         link()
 
@@ -30,6 +41,12 @@ class OutlineShader(
         viewProjectionUniform = getUniformLocation(viewProjectionMatrixName)
         modelUniform = getUniformLocation(modelMatrixName)
         edgeThicknessUniform = getUniformLocation(edgeThicknessName)
+        glUseProgram(0)
+    }
+
+    var edgeThickness: Float by Delegates.observable(0f) { _, _, new ->
+        glUseProgram(programId)
+        glUniform1f(edgeThicknessUniform, new)
         glUseProgram(0)
     }
 
@@ -106,6 +123,46 @@ class OutlineShader(
         glDeleteShader(vertexShader)
         glDeleteShader(geometryShader)
         glDeleteShader(fragmentShader)
+    }
+
+
+    fun use(callback: OutlineShader.ActiveShader.() -> Unit) {
+        val camera = camera
+        if (camera == null) {
+            ShaderProgram.logger.warn { "There is no active camera, we will skip this render" }
+            return
+        }
+
+        glUseProgram(programId)
+        glEnableVertexAttribArray(positionAttribute)
+
+        camera.loadUniform(viewProjectionUniform)
+
+        activeShader.callback()
+        glDisableVertexAttribArray(positionAttribute)
+        glUseProgram(0)
+    }
+
+
+    /**
+     * Class used in conjunction with [use] to allow some caller to render a model using this shader.
+     */
+    inner class ActiveShader {
+        fun renderModel(model: HalfEdgeModel) {
+            model.useAdjacency {
+                MemoryStack.stackPush().use {
+                    val nativeMatrix = it.mallocFloat(16)
+                    val modelMatrix = Matrix4f()
+                    model.transform.getWorldMatrix(modelMatrix)
+                    modelMatrix.get(nativeMatrix)
+
+                    GL20.glUniformMatrix4fv(modelUniform, false, nativeMatrix)
+                }
+
+                loadPositions(positionAttribute)
+                drawElementsAdjacency()
+            }
+        }
     }
 
     companion object {

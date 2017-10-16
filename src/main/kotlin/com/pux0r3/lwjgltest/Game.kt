@@ -177,8 +177,19 @@ class Game(private var width: Int, private var height: Int) {
                 }
             }
 
+            glDisable(GL_DEPTH_TEST)
+//            glDisable(GL_CULL_FACE)
+            outlineShader?.use {
+                models.forEach {
+                    renderModel(it)
+                }
+            }
+//            glEnable(GL_CULL_FACE)
+            glEnable(GL_DEPTH_TEST)
+
             glfwSwapBuffers(window)
             glfwPollEvents()
+            Utils.checkGlError()
         }
 
         // cleanup
@@ -210,6 +221,8 @@ class Game(private var width: Int, private var height: Int) {
                 Resources.loadAssetAsString("/shaders/outline.vert"),
                 Resources.loadAssetAsString("/shaders/outline.geom"),
                 Resources.loadAssetAsString("/shaders/outline.frag"))
+        outlineShader?.camera = camera
+        outlineShader?.edgeThickness = 0.1f
     }
 
     private fun freeShaders() {
