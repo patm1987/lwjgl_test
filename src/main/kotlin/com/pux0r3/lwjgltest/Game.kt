@@ -218,7 +218,7 @@ class Game(private var width: Int, private var height: Int) {
                 Resources.loadAssetAsString("/shaders/outline.geom"),
                 Resources.loadAssetAsString("/shaders/outline.frag"))
         outlineShader?.camera = camera
-        outlineShader?.edgeThickness = 0.1f
+        outlineShader?.edgeThickness = 0.15f
     }
 
     private fun freeShaders() {

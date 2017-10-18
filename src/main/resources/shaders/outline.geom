@@ -22,13 +22,13 @@ void generateEdge(vec4 v0, vec4 v1) {
     vec3 edgeDir = normalize(v1.xyz - v0.xyz);
     vec2 edgeHeight = vec2(edgeDir.y, -edgeDir.x) * EdgeThickness;
 
-    gl_Position = vec4(v0);
+    gl_Position = vec4(v0.xy - edgeDir.xy * EdgeThickness, v0.zw);
     EmitVertex();
 
     gl_Position = vec4(v0.xy + edgeHeight, v0.zw);
     EmitVertex();
 
-    gl_Position = v1;
+    gl_Position = vec4(v1.xy + edgeDir.xy * EdgeThickness, v1.zw);
     EmitVertex();
 
     gl_Position = vec4(v1.xy + edgeHeight, v1.zw);
@@ -47,13 +47,6 @@ void main() {
 
     // make sure we're front facing
     if (frontFacing(v0.xy, v2.xy, v4.xy)) {
-//        gl_Position = vec4(v0);
-//        EmitVertex();
-//        gl_Position = vec4(v2);
-//        EmitVertex();
-//        gl_Position = vec4(v4);
-//        EmitVertex();
-
         // generate an edge for every back facing neighbor
         if (!frontFacing(v0.xy, v1.xy, v2.xy)) {
             generateEdge(v0, v2);
