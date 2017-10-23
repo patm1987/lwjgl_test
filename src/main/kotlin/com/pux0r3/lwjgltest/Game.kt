@@ -24,19 +24,21 @@ class Game(private var width: Int, private var height: Int) {
     private var window: Long = NULL
     private var shipShader: ShaderProgram? = null
     private var outlineShader: OutlineShader? = null
+    private var shadowShader: ShadowShader? = null
     private var models = mutableListOf<HalfEdgeModel>()
+
     private val camera = LookAtPerspectiveCamera(
             Math.toRadians(45.0).toFloat(),
             1f,
             .01f,
             100f,
             Vector3f())
-
     private var pendingWidth = 0
-    private var pendingHeight = 0
 
+    private var pendingHeight = 0
     // cache the ship model for some hacky fun
     private var ship: HalfEdgeModel? = null
+
     private var shipMaterial: Material? = null
 
     init {
@@ -183,6 +185,12 @@ class Game(private var width: Int, private var height: Int) {
                 }
             }
 
+            shadowShader?.use {
+                models.forEach {
+                    renderModel(it)
+                }
+            }
+
             glfwSwapBuffers(window)
             glfwPollEvents()
             Utils.checkGlError()
@@ -219,6 +227,12 @@ class Game(private var width: Int, private var height: Int) {
                 Resources.loadAssetAsString("/shaders/outline.frag"))
         outlineShader?.camera = camera
         outlineShader?.edgeThickness = 0.15f
+
+        shadowShader = ShadowShader(
+                Resources.loadAssetAsString("/shaders/shadow.vert"),
+                Resources.loadAssetAsString("/shaders/shadow.geom"),
+                Resources.loadAssetAsString("/shaders/shadow.frag"))
+        shadowShader?.camera = camera
     }
 
     private fun freeShaders() {
