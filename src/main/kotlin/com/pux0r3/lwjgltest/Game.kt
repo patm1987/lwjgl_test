@@ -270,7 +270,7 @@ class Game(private var width: Int, private var height: Int) {
             face(0, 2, 3)
         }
         halfEdgeGround.transform.setPosition(Vector3f(0f, -5f, 0f))
-        halfEdgeGround.transform.setScale(Vector3f(5f, 5f, 5f))
+        halfEdgeGround.transform.setScale(Vector3f(10f, 10f, 10f))
         models.add(halfEdgeGround)
     }
 

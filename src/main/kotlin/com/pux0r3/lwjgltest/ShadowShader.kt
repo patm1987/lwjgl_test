@@ -138,7 +138,7 @@ class ShadowShader(
             lightDirectionBuffer.put(lightDirection.x)
             lightDirectionBuffer.put(lightDirection.y)
             lightDirectionBuffer.put(lightDirection.z)
-            lightDirectionBuffer.put(1f)
+            lightDirectionBuffer.put(0f)
             lightDirectionBuffer.flip()
             glUniform4fv(lightDirectionUniform, lightDirectionBuffer)
         }
