@@ -11,6 +11,9 @@ import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWVidMode
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
+import org.lwjgl.opengl.GL14.GL_DECR_WRAP
+import org.lwjgl.opengl.GL14.GL_INCR_WRAP
+import org.lwjgl.opengl.GL20.glStencilOpSeparate
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.MemoryUtil.NULL
 import java.nio.IntBuffer
@@ -25,6 +28,7 @@ class Game(private var width: Int, private var height: Int) {
     private var shipShader: ShaderProgram? = null
     private var outlineShader: OutlineShader? = null
     private var shadowShader: ShadowShader? = null
+    private var unlitShader: UnlitShader? = null
     private var models = mutableListOf<HalfEdgeModel>()
 
     private val camera = LookAtPerspectiveCamera(
@@ -170,12 +174,12 @@ class Game(private var width: Int, private var height: Int) {
                 height = pendingHeight
                 glViewport(0, 0, width, height)
             }
-            glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+            glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT or GL_STENCIL_BUFFER_BIT)
 
-            shipShader?.use {
+            unlitShader?.use {
                 // call use to reduce redundant state sets
                 models.forEach {
-                    renderModel(it, shipMaterial!!)
+                    renderModel(it)
                 }
             }
 
@@ -185,11 +189,33 @@ class Game(private var width: Int, private var height: Int) {
                 }
             }
 
+            glEnable(GL_STENCIL_TEST)
+            glStencilFunc(GL_ALWAYS, 0, -1)
+            glColorMask(false, false, false, false)
+            glDepthMask(false)
+            glDisable(GL_CULL_FACE)
+            glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INCR_WRAP)
+            glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_DECR_WRAP)
             shadowShader?.use {
                 models.forEach {
                     renderModel(it)
                 }
             }
+            glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP)
+            glEnable(GL_CULL_FACE)
+            glDepthMask(true)
+            glColorMask(true, true, true, true)
+
+            glClear(GL_DEPTH_BUFFER_BIT)
+            glStencilFunc(GL_EQUAL, 0, -1)
+            shipShader?.use {
+                // call use to reduce redundant state sets
+                models.forEach {
+                    renderModel(it, shipMaterial!!)
+                }
+            }
+            glStencilFunc(GL_ALWAYS, 0, -1)
+            glDisable(GL_STENCIL_TEST)
 
             glfwSwapBuffers(window)
             glfwPollEvents()
@@ -233,6 +259,11 @@ class Game(private var width: Int, private var height: Int) {
                 Resources.loadAssetAsString("/shaders/shadow.geom"),
                 Resources.loadAssetAsString("/shaders/shadow.frag"))
         shadowShader?.camera = camera
+
+        unlitShader = UnlitShader(
+                Resources.loadAssetAsString("/shaders/unlit.vert"),
+                Resources.loadAssetAsString("/shaders/unlit.frag"))
+        unlitShader?.camera = camera
     }
 
     private fun freeShaders() {
