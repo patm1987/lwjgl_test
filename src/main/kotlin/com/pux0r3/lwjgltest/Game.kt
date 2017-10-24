@@ -183,11 +183,11 @@ class Game(private var width: Int, private var height: Int) {
                 }
             }
 
-            outlineShader?.use {
-                models.forEach {
-                    renderModel(it)
-                }
-            }
+//            outlineShader?.use {
+//                models.forEach {
+//                    renderModel(it)
+//                }
+//            }
 
             glEnable(GL_STENCIL_TEST)
             glStencilFunc(GL_ALWAYS, 0, -1)
@@ -300,7 +300,7 @@ class Game(private var width: Int, private var height: Int) {
             face(0, 1, 2)
             face(0, 2, 3)
         }
-        halfEdgeGround.transform.setPosition(Vector3f(0f, -5f, 0f))
+        halfEdgeGround.transform.setPosition(Vector3f(0f, -2f, 0f))
         halfEdgeGround.transform.setScale(Vector3f(10f, 10f, 10f))
         models.add(halfEdgeGround)
     }
